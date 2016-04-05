@@ -16,6 +16,7 @@
 		E1C0529A1CB3F45E00CC6FFD /* Book.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C052991CB3F45E00CC6FFD /* Book.swift */; };
 		E1C0529C1CB3F8E200CC6FFD /* DatabaseInitialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C0529B1CB3F8E200CC6FFD /* DatabaseInitialization.swift */; };
 		E1C0529E1CB3F9DD00CC6FFD /* DatabaseSingleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C0529D1CB3F9DD00CC6FFD /* DatabaseSingleton.swift */; };
+		E1C052A11CB3FF3E00CC6FFD /* Books.json in Resources */ = {isa = PBXBuildFile; fileRef = E1C052A01CB3FF3E00CC6FFD /* Books.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		E1C052991CB3F45E00CC6FFD /* Book.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Book.swift; sourceTree = "<group>"; };
 		E1C0529B1CB3F8E200CC6FFD /* DatabaseInitialization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatabaseInitialization.swift; sourceTree = "<group>"; };
 		E1C0529D1CB3F9DD00CC6FFD /* DatabaseSingleton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatabaseSingleton.swift; sourceTree = "<group>"; };
+		E1C052A01CB3FF3E00CC6FFD /* Books.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Books.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,6 +86,7 @@
 		E1C052851CB3EE0A00CC6FFD /* YapPracticeProject */ = {
 			isa = PBXGroup;
 			children = (
+				E1C0529F1CB3FEAD00CC6FFD /* Fixtures */,
 				E1C052981CB3F45300CC6FFD /* Models */,
 				E1C052861CB3EE0A00CC6FFD /* AppDelegate.swift */,
 				E1C052881CB3EE0A00CC6FFD /* ViewController.swift */,
@@ -103,6 +106,14 @@
 				E1C052991CB3F45E00CC6FFD /* Book.swift */,
 			);
 			name = Models;
+			sourceTree = "<group>";
+		};
+		E1C0529F1CB3FEAD00CC6FFD /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				E1C052A01CB3FF3E00CC6FFD /* Books.json */,
+			);
+			name = Fixtures;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -166,6 +177,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E1C052A11CB3FF3E00CC6FFD /* Books.json in Resources */,
 				E1C052911CB3EE0A00CC6FFD /* LaunchScreen.storyboard in Resources */,
 				E1C0528E1CB3EE0A00CC6FFD /* Assets.xcassets in Resources */,
 				E1C0528C1CB3EE0A00CC6FFD /* Main.storyboard in Resources */,
