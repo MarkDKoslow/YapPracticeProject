@@ -7,6 +7,15 @@
 //
 
 import UIKit
+import YapDatabase
+
+func getApplicationSupportURL() -> NSURL {
+    do {
+        return try NSFileManager.defaultManager().URLForDirectory(.ApplicationSupportDirectory, inDomain: .UserDomainMask, appropriateForURL: nil, create: true)
+    } catch {
+        fatalError("Failed to get URL for application support directory")
+    }
+}
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -16,6 +25,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
+        guard let databasePath = getApplicationSupportURL().URLByAppendingPathComponent("PracticeProject.sqlite").path else {
+            fatalError("Failed to get database path")
+        }
+        
+        let database = initializeDatabaseAtPath(databasePath)
+        Database.setSharedDatabase(database)
         return true
     }
 
