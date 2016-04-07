@@ -17,20 +17,47 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
+        // Read Books json
         let myFileURL = NSBundle.mainBundle().URLForResource("Books", withExtension: "json")!
-        
-        do {
-            let readFile = try String(contentsOfURL: myFileURL, encoding: NSUTF8StringEncoding)
-            print("\(readFile)")
-        } catch let error as NSError {
-            print("There was an error \(error)")
+        guard let fileData = NSData(contentsOfURL: myFileURL) else {
+            fatalError("File could not be found")
         }
         
-//        let connection = Database.newConnection()
-//        
-//        connection.readWriteWithBlock { transaction in
-//            transaction.setObject(<#T##object: AnyObject?##AnyObject?#>, forKey: <#T##String#>, inCollection: <#T##String?#>)
-//        }
+        // Parse Books json into dictionary
+        var bookList = [Book]()
+        do {
+            let json = try NSJSONSerialization.JSONObjectWithData(fileData, options: .AllowFragments)
+            print("\(json)")
+            
+            if let books = json["books"] as? [[String: String]] {
+                for book in books {
+                    guard let bookTitle = book["title"], author = book["author"], isbn = book["isbn"] else {
+                        fatalError("Book could not be parsed correctly")
+                    }
+                    let bookObject = Book(title: bookTitle, author: author, isbn: isbn)
+                    bookList.append(bookObject)
+                }
+            }
+        } catch {
+            print("lolz fail")
+        }
+        
+        
+        // Store Books in YAP
+        let connection = Database.newConnection()
+        var huckFinn: Book?
+        
+        connection.asyncReadWriteWithBlock ({ transaction in
+            for book in bookList {
+                transaction.setObject(book, forKey: book.isbn, inCollection: "Books")
+            }
+        }, completionBlock: {
+            connection.readWithBlock { transaction in
+                huckFinn = transaction.objectForKey("0486280616", inCollection: "Books") as? Book
+            }
+        })
+        
+        print("\(huckFinn)")
     }
 
     override func didReceiveMemoryWarning() {
