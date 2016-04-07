@@ -31,13 +31,20 @@ class Database {
         }
     }
     
+    // New connection to DB
+    static func newConnection() -> YapDatabaseConnection {
+        return sharedDatabase.database.newConnection()
+    }
+    
+    // Register an extension with the DB
+    static func registerExtension(ext: YapDatabaseExtension, withName name: String) {
+        sharedDatabase.database.registerExtension(ext, withName: name)
+    }
+    
     private let database: YapDatabase
     
     // Initialize Database
     private init(database: YapDatabase) {
         self.database = database
-//        uiConnection = database.newConnection()
-//        uiConnection.beginLongLivedReadTransaction()
-//        rwConnection = database.newConnection()
     }
 }

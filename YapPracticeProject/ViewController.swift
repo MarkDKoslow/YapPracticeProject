@@ -16,14 +16,27 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        
+        let myFileURL = NSBundle.mainBundle().URLForResource("Books", withExtension: "json")!
+        
+        do {
+            let readFile = try String(contentsOfURL: myFileURL, encoding: NSUTF8StringEncoding)
+            print("\(readFile)")
+        } catch let error as NSError {
+            print("There was an error \(error)")
+        }
+        
+//        let connection = Database.newConnection()
+//        
+//        connection.readWriteWithBlock { transaction in
+//            transaction.setObject(<#T##object: AnyObject?##AnyObject?#>, forKey: <#T##String#>, inCollection: <#T##String?#>)
+//        }
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
-
 }
 
 extension ViewController: UITableViewDataSource {

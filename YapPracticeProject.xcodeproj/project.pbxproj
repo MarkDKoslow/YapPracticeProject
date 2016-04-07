@@ -17,6 +17,7 @@
 		E1C0529C1CB3F8E200CC6FFD /* DatabaseInitialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C0529B1CB3F8E200CC6FFD /* DatabaseInitialization.swift */; };
 		E1C0529E1CB3F9DD00CC6FFD /* DatabaseSingleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C0529D1CB3F9DD00CC6FFD /* DatabaseSingleton.swift */; };
 		E1C052A11CB3FF3E00CC6FFD /* Books.json in Resources */ = {isa = PBXBuildFile; fileRef = E1C052A01CB3FF3E00CC6FFD /* Books.json */; };
+		E1C052A21CB69BAC00CC6FFD /* Books.json in Sources */ = {isa = PBXBuildFile; fileRef = E1C052A01CB3FF3E00CC6FFD /* Books.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -239,6 +240,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E1C052A21CB69BAC00CC6FFD /* Books.json in Sources */,
 				E1C0529C1CB3F8E200CC6FFD /* DatabaseInitialization.swift in Sources */,
 				E1C0529E1CB3F9DD00CC6FFD /* DatabaseSingleton.swift in Sources */,
 				E1C052891CB3EE0A00CC6FFD /* ViewController.swift in Sources */,
