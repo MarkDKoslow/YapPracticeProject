@@ -46,16 +46,15 @@ class ViewController: UIViewController {
         // Store Books in YAP
         let connection = Database.newConnection()
         var huckFinn: Book?
-        
-        connection.asyncReadWriteWithBlock ({ transaction in
+        connection.readWriteWithBlock({ transaction in
             for book in bookList {
                 transaction.setObject(book, forKey: book.isbn, inCollection: "Books")
             }
-        }, completionBlock: {
-            connection.readWithBlock { transaction in
-                huckFinn = transaction.objectForKey("0486280616", inCollection: "Books") as? Book
-            }
         })
+
+        connection.readWithBlock { transaction in
+            huckFinn = transaction.objectForKey("0486280616", inCollection: "Books") as? Book
+        }
         
         print("\(huckFinn)")
     }
