@@ -18,6 +18,7 @@
 		E1C0529E1CB3F9DD00CC6FFD /* DatabaseSingleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C0529D1CB3F9DD00CC6FFD /* DatabaseSingleton.swift */; };
 		E1C052A11CB3FF3E00CC6FFD /* Books.json in Resources */ = {isa = PBXBuildFile; fileRef = E1C052A01CB3FF3E00CC6FFD /* Books.json */; };
 		E1C052A21CB69BAC00CC6FFD /* Books.json in Sources */ = {isa = PBXBuildFile; fileRef = E1C052A01CB3FF3E00CC6FFD /* Books.json */; };
+		E1C052A41CBAA25B00CC6FFD /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = E1C052A31CBAA25B00CC6FFD /* .gitignore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +36,7 @@
 		E1C0529B1CB3F8E200CC6FFD /* DatabaseInitialization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatabaseInitialization.swift; sourceTree = "<group>"; };
 		E1C0529D1CB3F9DD00CC6FFD /* DatabaseSingleton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatabaseSingleton.swift; sourceTree = "<group>"; };
 		E1C052A01CB3FF3E00CC6FFD /* Books.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Books.json; sourceTree = "<group>"; };
+		E1C052A31CBAA25B00CC6FFD /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,6 +71,7 @@
 		E1C0527A1CB3EE0A00CC6FFD = {
 			isa = PBXGroup;
 			children = (
+				E1C052A31CBAA25B00CC6FFD /* .gitignore */,
 				E1C052851CB3EE0A00CC6FFD /* YapPracticeProject */,
 				E1C052841CB3EE0A00CC6FFD /* Products */,
 				C7ADD8107394F8B1103F1956 /* Pods */,
@@ -178,6 +181,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E1C052A41CBAA25B00CC6FFD /* .gitignore in Resources */,
 				E1C052A11CB3FF3E00CC6FFD /* Books.json in Resources */,
 				E1C052911CB3EE0A00CC6FFD /* LaunchScreen.storyboard in Resources */,
 				E1C0528E1CB3EE0A00CC6FFD /* Assets.xcassets in Resources */,
