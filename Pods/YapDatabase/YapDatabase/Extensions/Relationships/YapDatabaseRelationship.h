@@ -8,8 +8,6 @@
 #import "YapDatabaseRelationshipConnection.h"
 #import "YapDatabaseRelationshipTransaction.h"
 
-NS_ASSUME_NONNULL_BEGIN
-
 /**
  * Welcome to YapDatabase!
  *
@@ -30,9 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (id)init;
 
-- (id)initWithVersionTag:(nullable NSString *)versionTag;
+- (id)initWithVersionTag:(NSString *)versionTag;
 
-- (id)initWithVersionTag:(nullable NSString *)versionTag options:(nullable YapDatabaseRelationshipOptions *)options;
+- (id)initWithVersionTag:(NSString *)versionTag options:(YapDatabaseRelationshipOptions *)options;
 
 /**
  * The versionTag assists in making changes to the extension or any objects that implement YapDatabaseRelationshipNode.
@@ -52,5 +50,3 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readonly) YapDatabaseRelationshipOptions *options;
 
 @end
-
-NS_ASSUME_NONNULL_END

@@ -1,6 +1,4 @@
 #import "YapDatabaseViewTypes.h"
-#import "YapDatabaseViewPrivate.h"
-
 
 /**
  * The grouping block handles both filtering and grouping.
@@ -17,78 +15,49 @@
 **/
 @implementation YapDatabaseViewGrouping
 
-@synthesize block = block;
-@synthesize blockType = blockType;
-@synthesize blockInvokeOptions = blockInvokeOptions;
+@synthesize groupingBlock = groupingBlock;
+@synthesize groupingBlockType = groupingBlockType;
 
-+ (instancetype)withKeyBlock:(YapDatabaseViewGroupingWithKeyBlock)block
++ (instancetype)withKeyBlock:(YapDatabaseViewGroupingWithKeyBlock)groupingBlock
 {
-	YapDatabaseBlockInvoke iops = YapDatabaseBlockInvokeDefaultForBlockTypeWithKey;
-	return [self withOptions:iops keyBlock:block];
-}
-
-+ (instancetype)withObjectBlock:(YapDatabaseViewGroupingWithObjectBlock)block
-{
-	YapDatabaseBlockInvoke iops = YapDatabaseBlockInvokeDefaultForBlockTypeWithObject;
-	return [self withOptions:iops objectBlock:block];
-}
-
-+ (instancetype)withMetadataBlock:(YapDatabaseViewGroupingWithMetadataBlock)block
-{
-	YapDatabaseBlockInvoke iops = YapDatabaseBlockInvokeDefaultForBlockTypeWithMetadata;
-	return [self withOptions:iops metadataBlock:block];
-}
-
-+ (instancetype)withRowBlock:(YapDatabaseViewGroupingWithRowBlock)block
-{
-	YapDatabaseBlockInvoke iops = YapDatabaseBlockInvokeDefaultForBlockTypeWithRow;
-	return [self withOptions:iops rowBlock:block];
-}
-
-+ (instancetype)withOptions:(YapDatabaseBlockInvoke)iops keyBlock:(YapDatabaseViewGroupingWithKeyBlock)block
-{
-	if (block == NULL) return nil;
+	if (groupingBlock == NULL) return nil;
 	
 	YapDatabaseViewGrouping *grouping = [[YapDatabaseViewGrouping alloc] init];
-	grouping->block = block;
-	grouping->blockType = YapDatabaseBlockTypeWithKey;
-	grouping->blockInvokeOptions = iops;
+	grouping->groupingBlock = groupingBlock;
+	grouping->groupingBlockType = YapDatabaseViewBlockTypeWithKey;
 	
 	return grouping;
 }
 
-+ (instancetype)withOptions:(YapDatabaseBlockInvoke)iops objectBlock:(YapDatabaseViewGroupingWithObjectBlock)block
++ (instancetype)withObjectBlock:(YapDatabaseViewGroupingWithObjectBlock)groupingBlock
 {
-	if (block == NULL) return nil;
+	if (groupingBlock == NULL) return nil;
 	
 	YapDatabaseViewGrouping *grouping = [[YapDatabaseViewGrouping alloc] init];
-	grouping->block = block;
-	grouping->blockType = YapDatabaseBlockTypeWithObject;
-	grouping->blockInvokeOptions = iops;
+	grouping->groupingBlock = groupingBlock;
+	grouping->groupingBlockType = YapDatabaseViewBlockTypeWithObject;
 	
 	return grouping;
 }
 
-+ (instancetype)withOptions:(YapDatabaseBlockInvoke)iops metadataBlock:(YapDatabaseViewGroupingWithMetadataBlock)block
++ (instancetype)withMetadataBlock:(YapDatabaseViewGroupingWithMetadataBlock)groupingBlock
 {
-	if (block == NULL) return nil;
+	if (groupingBlock == NULL) return nil;
 	
 	YapDatabaseViewGrouping *grouping = [[YapDatabaseViewGrouping alloc] init];
-	grouping->block = block;
-	grouping->blockType = YapDatabaseBlockTypeWithMetadata;
-	grouping->blockInvokeOptions = iops;
+	grouping->groupingBlock = groupingBlock;
+	grouping->groupingBlockType = YapDatabaseViewBlockTypeWithMetadata;
 	
 	return grouping;
 }
 
-+ (instancetype)withOptions:(YapDatabaseBlockInvoke)iops rowBlock:(YapDatabaseViewGroupingWithRowBlock)block
++ (instancetype)withRowBlock:(YapDatabaseViewGroupingWithRowBlock)groupingBlock
 {
-	if (block == NULL) return nil;
+	if (groupingBlock == NULL) return nil;
 	
 	YapDatabaseViewGrouping *grouping = [[YapDatabaseViewGrouping alloc] init];
-	grouping->block = block;
-	grouping->blockType = YapDatabaseBlockTypeWithRow;
-	grouping->blockInvokeOptions = iops;
+	grouping->groupingBlock = groupingBlock;
+	grouping->groupingBlockType = YapDatabaseViewBlockTypeWithRow;
 	
 	return grouping;
 }
@@ -147,78 +116,49 @@
 **/
 @implementation YapDatabaseViewSorting
 
-@synthesize block = block;
-@synthesize blockType = blockType;
-@synthesize blockInvokeOptions = blockInvokeOptions;
+@synthesize sortingBlock = sortingBlock;
+@synthesize sortingBlockType = sortingBlockType;
 
-+ (instancetype)withKeyBlock:(YapDatabaseViewSortingWithKeyBlock)block
++ (instancetype)withKeyBlock:(YapDatabaseViewSortingWithKeyBlock)sortingBlock
 {
-	YapDatabaseBlockInvoke iops = YapDatabaseBlockInvokeDefaultForBlockTypeWithKey;
-	return [self withOptions:iops keyBlock:block];
-}
-
-+ (instancetype)withObjectBlock:(YapDatabaseViewSortingWithObjectBlock)block
-{
-	YapDatabaseBlockInvoke iops = YapDatabaseBlockInvokeDefaultForBlockTypeWithObject;
-	return [self withOptions:iops objectBlock:block];
-}
-
-+ (instancetype)withMetadataBlock:(YapDatabaseViewSortingWithMetadataBlock)block
-{
-	YapDatabaseBlockInvoke iops = YapDatabaseBlockInvokeDefaultForBlockTypeWithMetadata;
-	return [self withOptions:iops metadataBlock:block];
-}
-
-+ (instancetype)withRowBlock:(YapDatabaseViewSortingWithRowBlock)block
-{
-	YapDatabaseBlockInvoke iops = YapDatabaseBlockInvokeDefaultForBlockTypeWithRow;
-	return [self withOptions:iops rowBlock:block];
-}
-
-+ (instancetype)withOptions:(YapDatabaseBlockInvoke)iops keyBlock:(YapDatabaseViewSortingWithKeyBlock)block
-{
-	if (block == NULL) return nil;
+	if (sortingBlock == NULL) return nil;
 	
 	YapDatabaseViewSorting *sorting = [[YapDatabaseViewSorting alloc] init];
-	sorting->block = block;
-	sorting->blockType = YapDatabaseBlockTypeWithKey;
-	sorting->blockInvokeOptions = iops;
+	sorting->sortingBlock = sortingBlock;
+	sorting->sortingBlockType = YapDatabaseViewBlockTypeWithKey;
 	
 	return sorting;
 }
 
-+ (instancetype)withOptions:(YapDatabaseBlockInvoke)iops objectBlock:(YapDatabaseViewSortingWithObjectBlock)block
++ (instancetype)withObjectBlock:(YapDatabaseViewSortingWithObjectBlock)sortingBlock
 {
-	if (block == NULL) return nil;
+	if (sortingBlock == NULL) return nil;
 	
 	YapDatabaseViewSorting *sorting = [[YapDatabaseViewSorting alloc] init];
-	sorting->block = block;
-	sorting->blockType = YapDatabaseBlockTypeWithObject;
-	sorting->blockInvokeOptions = iops;
+	sorting->sortingBlock = sortingBlock;
+	sorting->sortingBlockType = YapDatabaseViewBlockTypeWithObject;
 	
 	return sorting;
 }
 
-+ (instancetype)withOptions:(YapDatabaseBlockInvoke)iops metadataBlock:(YapDatabaseViewSortingWithMetadataBlock)block
++ (instancetype)withMetadataBlock:(YapDatabaseViewSortingWithMetadataBlock)sortingBlock
 {
-	if (block == NULL) return nil;
+	if (sortingBlock == NULL) return nil;
 	
 	YapDatabaseViewSorting *sorting = [[YapDatabaseViewSorting alloc] init];
-	sorting->block = block;
-	sorting->blockType = YapDatabaseBlockTypeWithMetadata;
-	sorting->blockInvokeOptions = iops;
+	sorting->sortingBlock = sortingBlock;
+	sorting->sortingBlockType = YapDatabaseViewBlockTypeWithMetadata;
 	
 	return sorting;
 }
 
-+ (instancetype)withOptions:(YapDatabaseBlockInvoke)iops rowBlock:(YapDatabaseViewSortingWithRowBlock)block
++ (instancetype)withRowBlock:(YapDatabaseViewSortingWithRowBlock)sortingBlock
 {
-	if (block == NULL) return nil;
+	if (sortingBlock == NULL) return nil;
 	
 	YapDatabaseViewSorting *sorting = [[YapDatabaseViewSorting alloc] init];
-	sorting->block = block;
-	sorting->blockType = YapDatabaseBlockTypeWithRow;
-	sorting->blockInvokeOptions = iops;
+	sorting->sortingBlock = sortingBlock;
+	sorting->sortingBlockType = YapDatabaseViewBlockTypeWithRow;
 	
 	return sorting;
 }
@@ -287,7 +227,7 @@
 	
 	YapDatabaseViewFind *find = [[YapDatabaseViewFind alloc] init];
 	find->findBlock = findBlock;
-	find->findBlockType = YapDatabaseBlockTypeWithKey;
+	find->findBlockType = YapDatabaseViewBlockTypeWithKey;
 	
 	return find;
 }
@@ -298,7 +238,7 @@
 	
 	YapDatabaseViewFind *find = [[YapDatabaseViewFind alloc] init];
 	find->findBlock = findBlock;
-	find->findBlockType = YapDatabaseBlockTypeWithObject;
+	find->findBlockType = YapDatabaseViewBlockTypeWithObject;
 	
 	return find;
 }
@@ -309,7 +249,7 @@
 	
 	YapDatabaseViewFind *find = [[YapDatabaseViewFind alloc] init];
 	find->findBlock = findBlock;
-	find->findBlockType = YapDatabaseBlockTypeWithMetadata;
+	find->findBlockType = YapDatabaseViewBlockTypeWithMetadata;
 	
 	return find;
 }
@@ -320,7 +260,35 @@
 	
 	YapDatabaseViewFind *find = [[YapDatabaseViewFind alloc] init];
 	find->findBlock = findBlock;
-	find->findBlockType = YapDatabaseBlockTypeWithRow;
+	find->findBlockType = YapDatabaseViewBlockTypeWithRow;
+	
+	return find;
+}
+
+// Helper method for supporting deprecated methods.
+// This method will disappear in the future.
++ (instancetype)withBlock:(YapDatabaseViewFindBlock)block blockType:(YapDatabaseViewBlockType)blockType
+{
+	YapDatabaseViewFind *find = nil;
+	switch (blockType)
+	{
+		case YapDatabaseViewBlockTypeWithKey      : {
+			find = [YapDatabaseViewFind withKeyBlock:(YapDatabaseViewFindWithKeyBlock)block];
+			break;
+		}
+		case YapDatabaseViewBlockTypeWithObject   : {
+			find = [YapDatabaseViewFind withObjectBlock:(YapDatabaseViewFindWithObjectBlock)block];
+			break;
+		}
+		case YapDatabaseViewBlockTypeWithMetadata : {
+			find = [YapDatabaseViewFind withMetadataBlock:(YapDatabaseViewFindWithMetadataBlock)block];
+			break;
+		}
+		case YapDatabaseViewBlockTypeWithRow      : {
+			find = [YapDatabaseViewFind withRowBlock:(YapDatabaseViewFindWithRowBlock)block];
+			break;
+		}
+	}
 	
 	return find;
 }

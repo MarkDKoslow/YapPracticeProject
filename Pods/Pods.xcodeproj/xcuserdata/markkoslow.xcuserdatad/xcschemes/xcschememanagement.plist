@@ -9,7 +9,7 @@
 			<key>isShown</key>
 			<false/>
 		</dict>
-		<key>Pods-YapPracticeProject.xcscheme</key>
+		<key>Pods.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
@@ -22,17 +22,17 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
-		<key>023A5808D3E159F9B51CB4E15A92A0B0</key>
+		<key>16CED792DAB249A9347841D783DC9CB6</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>893C4FFC771D3084B812E26EE4B18390</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
 		<key>8A2E8FED01C8A6BC8ADFCF3C3B78368F</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>AF76922C550539349590692E568F47F9</key>
 		<dict>
 			<key>primary</key>
 			<true/>

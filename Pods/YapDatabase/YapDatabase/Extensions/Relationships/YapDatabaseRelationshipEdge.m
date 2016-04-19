@@ -12,7 +12,7 @@
 @synthesize destinationCollection = destinationCollection;
 @synthesize destinationKey = destinationKey;
 
-@synthesize destinationFileURL = destinationFileURL;
+@synthesize destinationFilePath = destinationFilePath;
 
 @synthesize nodeDeleteRules = nodeDeleteRules;
 @synthesize isManualEdge = isManualEdge;
@@ -31,11 +31,11 @@
 }
 
 + (instancetype)edgeWithName:(NSString *)name
-          destinationFileURL:(NSURL *)destinationFileURL
+         destinationFilePath:(NSString *)destinationFilePath
              nodeDeleteRules:(YDB_NodeDeleteRules)rules
 {
 	return [[YapDatabaseRelationshipEdge alloc] initWithName:name
-	                                      destinationFileURL:destinationFileURL
+	                                     destinationFilePath:destinationFilePath
 	                                         nodeDeleteRules:rules];
 }
 
@@ -57,13 +57,13 @@
 + (instancetype)edgeWithName:(NSString *)name
                    sourceKey:(NSString *)sourceKey
                   collection:(NSString *)sourceCollection
-          destinationFileURL:(NSURL *)destinationFileURL
+         destinationFilePath:(NSString *)destinationFilePath
              nodeDeleteRules:(YDB_NodeDeleteRules)rules
 {
 	return [[YapDatabaseRelationshipEdge alloc] initWithName:name
 	                                               sourceKey:sourceKey
 	                                              collection:sourceCollection
-	                                      destinationFileURL:destinationFileURL
+	                                     destinationFilePath:destinationFilePath
 	                                         nodeDeleteRules:rules];
 }
 
@@ -98,24 +98,22 @@
  * Public init method.
  * Suitable for use with YapDatabaseRelationshipNode protocol.
 **/
-- (id)initWithName:(NSString *)inName destinationFileURL:(NSURL *)dstFileURL
-                                         nodeDeleteRules:(YDB_NodeDeleteRules)rules
+- (id)initWithName:(NSString *)inName destinationFilePath:(NSString *)dstFilePath
+                                          nodeDeleteRules:(YDB_NodeDeleteRules)rules
 {
-	if (inName == nil) return nil;     // Edge requires name
-	if (dstFileURL == nil) return nil; // Edge requires destination
+	if (inName == nil) return nil;      // Edge requires name
+	if (dstFilePath == nil) return nil; // Edge requires destination
 	
 	if ((self = [super init]))
 	{
 		name = [inName copy];
 		
-		destinationFileURL = [dstFileURL copy];
+		destinationFilePath = [dstFilePath copy];
 		
 		nodeDeleteRules = rules;
 		isManualEdge = NO;
 		
-		state = YDB_EdgeState_DestinationFileURL   | // originally created with valid dstFileURL
-		        YDB_EdgeState_HasDestinationRowid  | // no need for destinationRowid lookup (doesn't apply)
-		        YDB_EdgeState_HasDestinationFileURL; // no need for destinationFileURL deserialization
+		flags = YDB_FlagsHasDestinationRowid; // no need for destinationRowid lookup
 	}
 	return self;
 }
@@ -153,12 +151,12 @@
 
 - (id)initWithName:(NSString *)inName sourceKey:(NSString *)srcKey
                                      collection:(NSString *)srcCollection
-                             destinationFileURL:(NSURL *)dstFileURL
+                            destinationFilePath:(NSString *)dstFilePath
                                 nodeDeleteRules:(YDB_NodeDeleteRules)rules
 {
-	if (inName == nil) return nil;     // Edge requires name
-	if (srcKey == nil) return nil;     // Edge requires source
-	if (dstFileURL == nil) return nil; // Edge requires destination
+	if (inName == nil) return nil;      // Edge requires name
+	if (srcKey == nil) return nil;      // Edge requires source
+	if (dstFilePath == nil) return nil; // Edge requires destination
 	
 	if ((self = [super init]))
 	{
@@ -167,14 +165,12 @@
 		sourceKey = [srcKey copy];
 		sourceCollection = srcCollection ? [srcCollection copy] : @"";
 		
-		destinationFileURL = [dstFileURL copy];
+		destinationFilePath = [dstFilePath copy];
 		
 		nodeDeleteRules = rules;
 		isManualEdge = YES;
 		
-		state = YDB_EdgeState_DestinationFileURL   | // originally created with valid dstFileURL
-		        YDB_EdgeState_HasDestinationRowid  | // no need for destinationRowid lookup (doesn't apply)
-		        YDB_EdgeState_HasDestinationFileURL; // no need for destinationFileURL deserialization
+		flags = YDB_FlagsHasDestinationRowid; // no need for destinationRowid lookup
 	}
 	return self;
 }
@@ -183,31 +179,71 @@
  * Internal init method.
  * This method is used when reading an edge from a row in the database.
 **/
-- (id)initWithEdgeRowid:(int64_t)rowid
-                   name:(NSString *)inName
-               srcRowid:(int64_t)srcRowid
-               dstRowid:(int64_t)dstRowid
-                dstData:(NSData *)dstData
-                  rules:(int)rules
-                 manual:(BOOL)manual
+- (id)initWithRowid:(int64_t)rowid
+               name:(NSString *)inName
+                src:(int64_t)src
+                dst:(int64_t)dst
+        dstFilePath:(NSString *)dstFilePath
+              rules:(int)rules
+             manual:(BOOL)manual
 {
 	if ((self = [super init]))
 	{
 		name = [inName copy];
-		destinationFileURLData = dstData;
+		destinationFilePath = [dstFilePath copy];
 		nodeDeleteRules = (unsigned short)rules;
 		isManualEdge = manual;
 		
 		edgeRowid = rowid;
-		sourceRowid = srcRowid;
-		destinationRowid = dstRowid;
+		sourceRowid = src;
+		destinationRowid = dst;
 		
-		state = YDB_EdgeState_HasEdgeRowid | YDB_EdgeState_HasSourceRowid | YDB_EdgeState_HasDestinationRowid;
-		
-		if (destinationFileURLData)
-			state |= YDB_EdgeState_DestinationFileURL; // originally created with valid dstFileURL
+		flags = YDB_FlagsHasSourceRowid | YDB_FlagsHasDestinationRowid | YDB_FlagsHasEdgeRowid;
 	}
 	return self;
+}
+
+#pragma mark NSCoding
+
+- (id)initWithCoder:(NSCoder *)decoder
+{
+	if ((self = [super init]))
+	{
+		name = [decoder decodeObjectForKey:@"name"];
+		
+		sourceKey = [decoder decodeObjectForKey:@"sourceKey"];
+		sourceCollection = [decoder decodeObjectForKey:@"sourceCollection"];
+		
+		destinationKey = [decoder decodeObjectForKey:@"destinationKey"];
+		destinationCollection = [decoder decodeObjectForKey:@"destinationCollection"];
+		
+		destinationFilePath = [decoder decodeObjectForKey:@"destinationFilePath"];
+		
+		nodeDeleteRules = (unsigned short)[decoder decodeIntForKey:@"nodeDeleteRules"];
+		isManualEdge = [decoder decodeBoolForKey:@"isManualEdge"];
+		
+		if (destinationFilePath)
+			flags = YDB_FlagsHasDestinationRowid;
+		else
+			flags = YDB_FlagsNone;
+	}
+	return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)coder
+{
+	[coder encodeObject:name forKey:@"name"];
+	
+	[coder encodeObject:sourceKey forKey:@"sourceKey"];
+	[coder encodeObject:sourceCollection forKey:@"sourceCollection"];
+	
+	[coder encodeObject:destinationKey forKey:@"destinationKey"];
+	[coder encodeObject:destinationCollection forKey:@"destinationCollection"];
+	
+	[coder encodeObject:destinationFilePath forKey:@"destinationFilePath"];
+	
+	[coder encodeInt:nodeDeleteRules forKey:@"nodeDeleteRules"];
+	[coder encodeBool:isManualEdge forKey:@"isManualEdge"];
 }
 
 #pragma mark NSCopying
@@ -221,7 +257,7 @@
 	copy->sourceCollection = sourceCollection;
 	copy->destinationKey = destinationKey;
 	copy->destinationCollection = destinationCollection;
-	copy->destinationFileURL = destinationFileURL;
+	copy->destinationFilePath = destinationFilePath;
 	copy->nodeDeleteRules = nodeDeleteRules;
 	copy->isManualEdge = isManualEdge;
 	
@@ -229,11 +265,19 @@
 	copy->sourceRowid = sourceRowid;
 	copy->destinationRowid = destinationRowid;
 	
-	copy->destinationFileURLData = destinationFileURLData;
+	copy->edgeAction = YDB_EdgeActionNone; // Return a clean copy
+	copy->flags = YDB_FlagsNone;           // Return a clean copy
 	
-	copy->state = state;                // State remains - related to ivar state
-	copy->flags = YDB_EdgeFlags_None;   // Flags reset - related to particular instance
-	copy->action = YDB_EdgeAction_None; // Action reset - related to particular instance
+	// Set appropriate flags
+	
+	if ((flags & YDB_FlagsHasSourceRowid))
+		copy->flags |= YDB_FlagsHasSourceRowid;
+	
+	if ((flags & YDB_FlagsHasDestinationRowid) || destinationFilePath)
+		copy->flags |= YDB_FlagsHasDestinationRowid;
+	
+	if ((flags & YDB_FlagsHasEdgeRowid))
+		copy->flags |= YDB_FlagsHasEdgeRowid;
 	
 	return copy;
 }
@@ -247,27 +291,69 @@
 	copy->sourceCollection = [newSrcCollection copy];
 	copy->destinationKey = destinationKey;
 	copy->destinationCollection = destinationCollection;
-	copy->destinationFileURL = destinationFileURL;
+	copy->destinationFilePath = destinationFilePath;
 	copy->nodeDeleteRules = nodeDeleteRules;
-	copy->isManualEdge = isManualEdge;
+	copy->isManualEdge = NO; // Force proper value
 	
 	copy->edgeRowid = edgeRowid;
 	copy->sourceRowid = newSrcRowid;
 	copy->destinationRowid = destinationRowid;
 	
-	copy->destinationFileURLData = destinationFileURLData;
+	copy->edgeAction = YDB_EdgeActionNone; // Return a clean copy
+	copy->flags = YDB_FlagsNone;           // Return a clean copy
 	
-	copy->state = state;                // State remains - related to ivar state
-	copy->flags = YDB_EdgeFlags_None;   // Flags reset - related to particular instance
-	copy->action = YDB_EdgeAction_None; // Action reset - related to particular instance
+	// Set appropriate flags
 	
-	// Ensure HasSourceRowid is set due to the change
-	copy->state |= YDB_EdgeState_HasSourceRowid;
+	copy->flags |= YDB_FlagsHasSourceRowid;
+	
+	if ((flags & YDB_FlagsHasDestinationRowid) || destinationFilePath)
+		copy->flags |= YDB_FlagsHasDestinationRowid;
+	
+	if ((flags & YDB_FlagsHasEdgeRowid))
+		copy->flags |= YDB_FlagsHasEdgeRowid;
 	
 	return copy;
 }
 
-#pragma mark Info
+#pragma mark Comparison
+
+/**
+ * Compares two manual edges to see if they represent the same relationship.
+ * That is, if both edges are manual edges, and the following are equal:
+ *
+ * - name
+ * - sourceKey / sourceCollection
+ * - destinationKey / destinationCollection
+ * - destinationFilePath
+ *
+ * The nodeDeleteRules do NOT need to match.
+**/
+- (BOOL)matchesManualEdge:(YapDatabaseRelationshipEdge *)edge
+{
+	if (edge == nil) return NO;
+	
+	if (!isManualEdge) return NO;
+	if (!edge->isManualEdge) return NO;
+	
+	if (![name isEqualToString:edge->name]) return NO;
+	
+	if (![sourceKey isEqualToString:edge->sourceKey]) return NO;
+	if (![sourceCollection isEqualToString:edge->sourceCollection]) return NO;
+	
+	if (destinationFilePath)
+	{
+		if (![destinationFilePath isEqualToString:edge->destinationFilePath]) return NO;
+	}
+	else
+	{
+		if (![destinationKey isEqualToString:edge->destinationKey]) return NO;
+		if (![destinationCollection isEqualToString:edge->destinationCollection]) return NO;
+	}
+	
+	return YES;
+}
+
+#pragma mark Description
 
 - (NSString *)description
 {
@@ -296,64 +382,38 @@
 	if ([rulesStr length] > 0)
 		[rulesStr deleteCharactersInRange:NSMakeRange([rulesStr length] - 2, 2)];
 	
-	// Create state string
-	
-	NSMutableString *stateStr = [NSMutableString stringWithCapacity:64];
-	
-	if (state & YDB_EdgeState_DestinationFileURL)
-		[stateStr appendString:@"DestinationFileURL, "];
-	
-	if (state & YDB_EdgeState_HasSourceRowid)
-		[stateStr appendString:@"HasSourceRowid, "];
-	
-	if (state & YDB_EdgeState_HasDestinationRowid)
-		[stateStr appendString:@"HasDestinationRowid, "];
-	
-	if (state & YDB_EdgeState_HasDestinationFileURL)
-		[stateStr appendString:@"HasDestinationFileURL, "];
-	
-	if (state & YDB_EdgeState_HasEdgeRowid)
-		[stateStr appendString:@"HasEdgeRowid, "];
-	
-	if ([stateStr length] > 0)
-		[stateStr deleteCharactersInRange:NSMakeRange([stateStr length] - 2, 2)];
-	
-	// Create flags string
+	// Create flags description
 	
 	NSMutableString *flagsStr = [NSMutableString stringWithCapacity:64];
 	
-	if (flags & YDB_EdgeFlags_SourceDeleted)
+	if (flags & YDB_FlagsSourceDeleted)
 		[flagsStr appendString:@"SourceDeleted, "];
 	
-	if (flags & YDB_EdgeFlags_DestinationDeleted)
+	if (flags & YDB_FlagsDestinationDeleted)
 		[flagsStr appendString:@"DestinationDeleted, "];
 	
-	if (flags & YDB_EdgeFlags_BadSource)
+	if (flags & YDB_FlagsBadSource)
 		[flagsStr appendString:@"BadSource, "];
 	
-	if (flags & YDB_EdgeFlags_BadDestination)
+	if (flags & YDB_FlagsBadDestination)
 		[flagsStr appendString:@"BadDestination, "];
 	
-	if (flags & YDB_EdgeFlags_EdgeNotInDatabase)
-		[flagsStr appendString:@"EdgeNotInDatabase, "];
+	if (flags & YDB_FlagsHasSourceRowid)
+		[flagsStr appendString:@"HasSourceRowid, "];
+	
+	if (flags & YDB_FlagsHasDestinationRowid)
+		[flagsStr appendString:@"HasDestinationRowid, "];
+	
+	if (flags & YDB_FlagsHasEdgeRowid)
+		[flagsStr appendString:@"HasEdgeRowid, "];
+	
+	if (flags & YDB_FlagsNotInDatabase)
+		[flagsStr appendString:@"NotInDatabase, "];
 	
 	if ([flagsStr length] > 0)
 		[flagsStr deleteCharactersInRange:NSMakeRange([flagsStr length] - 2, 2)];
 	
-	// Create action string
-
-	NSString *actionStr = @"";
-	
-	if (action == YDB_EdgeAction_None)
-		actionStr = @"none";
-	else if (action == YDB_EdgeAction_Insert)
-		actionStr = @"insert";
-	else if (action == YDB_EdgeAction_Update)
-		actionStr = @"update";
-	else if (action == YDB_EdgeAction_Delete)
-		actionStr = @"delete";
-	
-	// Create full edge description
+	// Create edge description
 	
 	NSMutableString *description = [NSMutableString stringWithCapacity:128];
 	
@@ -362,33 +422,20 @@
 	
 	if (sourceKey)
 		[description appendFormat:@" src(%@, %@)", sourceKey, (sourceCollection ?: @"")];
-	else if (state & YDB_EdgeState_HasSourceRowid)
+	else if (flags & YDB_FlagsHasSourceRowid)
 		[description appendFormat:@" srcRowid(%lld)", sourceRowid];
 	
 	if (destinationKey)
 		[description appendFormat:@" dst(%@, %@)", destinationKey, (destinationCollection ?: @"")];
-	else if (state & YDB_EdgeState_DestinationFileURL)
-	{
-		if (state & YDB_EdgeState_HasDestinationFileURL)
-			[description appendFormat:@" dstFileURL(%@)", destinationFileURL];
-		else
-			[description appendFormat:@" dstFileURL(<not deserialized>)"];
-	}
-	else if (state & YDB_EdgeState_HasDestinationRowid)
+	else if (destinationFilePath)
+		[description appendFormat:@" dstFilePath(%@)", destinationFilePath];
+	else if (flags & YDB_FlagsHasDestinationRowid)
 		[description appendFormat:@" dstRowid(%lld)", destinationRowid];
 	
 	[description appendFormat:@" rules(%@)", rulesStr];
 	
-	if ([stateStr length] > 0) {
-		[description appendFormat:@" state(%@)", stateStr];
-	}
-	
 	if ([flagsStr length] > 0) {
 		[description appendFormat:@" flags(%@)", flagsStr];
-	}
-	
-	if ([actionStr length] > 0) {
-		[description appendFormat:@" action(%@)", actionStr];
 	}
 	
 	if (isManualEdge) {

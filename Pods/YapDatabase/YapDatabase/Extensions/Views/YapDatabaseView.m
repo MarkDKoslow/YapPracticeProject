@@ -158,37 +158,40 @@
 
 #pragma mark Init
 
-- (instancetype)initWithGrouping:(YapDatabaseViewGrouping *)inGrouping
-                         sorting:(YapDatabaseViewSorting *)inSorting
+- (instancetype)initWithGrouping:(YapDatabaseViewGrouping *)grouping
+                         sorting:(YapDatabaseViewSorting *)sorting
 {
-	return [self initWithGrouping:inGrouping
-	                      sorting:inSorting
+	return [self initWithGrouping:grouping
+	                      sorting:sorting
 	                   versionTag:nil
 	                      options:nil];
 }
 
-- (instancetype)initWithGrouping:(YapDatabaseViewGrouping *)inGrouping
-                         sorting:(YapDatabaseViewSorting *)inSorting
+- (instancetype)initWithGrouping:(YapDatabaseViewGrouping *)grouping
+                         sorting:(YapDatabaseViewSorting *)sorting
                       versionTag:(NSString *)inVersionTag
 {
-	return [self initWithGrouping:inGrouping
-	                      sorting:inSorting
+	return [self initWithGrouping:grouping
+	                      sorting:sorting
 	                   versionTag:inVersionTag
 	                      options:nil];
 }
 
-- (instancetype)initWithGrouping:(YapDatabaseViewGrouping *)inGrouping
-                         sorting:(YapDatabaseViewSorting *)inSorting
+- (instancetype)initWithGrouping:(YapDatabaseViewGrouping *)grouping
+                         sorting:(YapDatabaseViewSorting *)sorting
                       versionTag:(NSString *)inVersionTag
                          options:(YapDatabaseViewOptions *)inOptions
 {
-	NSAssert([inGrouping isKindOfClass:[YapDatabaseViewGrouping class]], @"Invalid parameter: grouping");
-	NSAssert([inSorting isKindOfClass:[YapDatabaseViewSorting class]], @"Invalid parameter: sorting");
+	NSAssert(grouping != NULL, @"Invalid parameter: grouping == nil");
+	NSAssert(sorting != NULL, @"Invalid parameter: sorting == nil");
 	
 	if ((self = [super init]))
 	{
-		grouping = inGrouping;
-		sorting = inSorting;
+		groupingBlock = grouping.groupingBlock;
+		groupingBlockType = grouping.groupingBlockType;
+		
+		sortingBlock = sorting.sortingBlock;
+		sortingBlockType = sorting.sortingBlockType;
 		
 		versionTag = inVersionTag ? [inVersionTag copy] : @"";
 		
@@ -255,12 +258,12 @@
 	return mostRecentSortingBlock;
 }
 
-- (YapDatabaseBlockType)groupingBlockType
+- (YapDatabaseViewBlockType)groupingBlockType
 {
 	// This property can be changed from within a readWriteTransaction.
 	// We go through the snapshot queue to ensure we're fetching the most recent value.
 	
-	__block YapDatabaseBlockType mostRecentGroupingBlockType = 0;
+	__block YapDatabaseViewBlockType mostRecentGroupingBlockType = 0;
 	dispatch_block_t block = ^{
 		
 		mostRecentGroupingBlockType = groupingBlockType;
@@ -282,12 +285,12 @@
 	return mostRecentGroupingBlockType;
 }
 
-- (YapDatabaseBlockType)sortingBlockType
+- (YapDatabaseViewBlockType)sortingBlockType
 {
 	// This property can be changed from within a readWriteTransaction.
 	// We go through the snapshot queue to ensure we're fetching the most recent value.
 	
-	__block YapDatabaseBlockType mostRecentSortingBlockType = 0;
+	__block YapDatabaseViewBlockType mostRecentSortingBlockType = 0;
 	dispatch_block_t block = ^{
 		
 		mostRecentSortingBlockType = sortingBlockType;
@@ -393,16 +396,18 @@
 {
 	YDBLogAutoTrace();
 	
-	YapDatabaseViewGrouping *newGrouping = changeset[changeset_key_grouping];
-	if (newGrouping)
+	YapDatabaseViewGroupingBlock newGroupingBlock = changeset[changeset_key_groupingBlock];
+	if (newGroupingBlock)
 	{
-		grouping = newGrouping;
+		groupingBlock = newGroupingBlock;
+		groupingBlockType = [changeset[changeset_key_groupingBlockType] integerValue];
 	}
 	
-	YapDatabaseViewSorting *newSorting = changeset[changeset_key_sorting];
-	if (newSorting)
+	YapDatabaseViewSortingBlock newSortingBlock = changeset[changeset_key_sortingBlock];
+	if (newSortingBlock)
 	{
-		sorting = newSorting;
+		sortingBlock = newSortingBlock;
+		sortingBlockType = [changeset[changeset_key_sortingBlockType] integerValue];
 	}
 	
 	NSString *newVersionTag = changeset[changeset_key_versionTag];
@@ -447,16 +452,22 @@
 /**
  * Used by YapDatabaseViewConnection to fetch & cache the values for a readWriteTransaction.
 **/
-- (void)getGrouping:(YapDatabaseViewGrouping **)groupingPtr
-            sorting:(YapDatabaseViewSorting **)sortingPtr
+- (void)getGroupingBlock:(YapDatabaseViewGroupingBlock *)groupingBlockPtr
+       groupingBlockType:(YapDatabaseViewBlockType *)groupingBlockTypePtr
+            sortingBlock:(YapDatabaseViewSortingBlock *)sortingBlockPtr
+        sortingBlockType:(YapDatabaseViewBlockType *)sortingBlockTypePtr
 {
-	__block YapDatabaseViewGrouping *mostRecentGrouping = nil;
-	__block YapDatabaseViewSorting  *mostRecentSorting  = nil;
+	__block YapDatabaseViewGroupingBlock mostRecentGroupingBlock = NULL;
+	__block YapDatabaseViewSortingBlock  mostRecentSortingBlock  = NULL;
+	__block YapDatabaseViewBlockType mostRecentGroupingBlockType = 0;
+	__block YapDatabaseViewBlockType mostRecentSortingBlockType  = 0;
 	
 	dispatch_block_t block = ^{
 	
-		mostRecentGrouping = grouping;
-		mostRecentSorting  = sorting;
+		mostRecentGroupingBlock     = groupingBlock;
+		mostRecentGroupingBlockType = groupingBlockType;
+		mostRecentSortingBlock      = sortingBlock;
+		mostRecentSortingBlockType  = sortingBlockType;
 	};
 	
 	__strong YapDatabase *database = self.registeredDatabase;
@@ -468,8 +479,10 @@
 			dispatch_sync(database->snapshotQueue, block);
 	}
 	
-	if (groupingPtr) *groupingPtr = mostRecentGrouping;
-	if (sortingPtr)  *sortingPtr  = mostRecentSorting;
+	if (groupingBlockPtr)     *groupingBlockPtr     = mostRecentGroupingBlock;
+	if (groupingBlockTypePtr) *groupingBlockTypePtr = mostRecentGroupingBlockType;
+	if (sortingBlockPtr)      *sortingBlockPtr      = mostRecentSortingBlock;
+	if (sortingBlockTypePtr)  *sortingBlockTypePtr  = mostRecentSortingBlockType;
 }
 
 @end

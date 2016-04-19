@@ -1,6 +1,5 @@
 #import <Foundation/Foundation.h>
 
-NS_ASSUME_NONNULL_BEGIN
 
 /**
  * This utility class is used by the YapDatabaseCloudKitRecordBlock.
@@ -37,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   then you MUST also configure the YapDatabaseCloudKit instance with a databaseIdentifier block.
  *   Failure to do so will result in an exception.
 **/
-@property (nonatomic, copy, readwrite, nullable) NSString *databaseIdentifier;
+@property (nonatomic, copy, readwrite) NSString *databaseIdentifier;
 
 /**
  * If you make changes to the CKRecord, you can optionally choose to store the original key/value pairs.
@@ -46,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
  * This dictionary will be stored alongside the modified CKRecord within the queue.
  * And will be made available during merge operations via YDBCKMergeInfo.originalValues.
 **/
-@property (nonatomic, strong, readwrite, nullable) NSDictionary<NSString *, id> *originalValues;
+@property (nonatomic, strong, readwrite) NSDictionary *originalValues;
 
 /**
  * When this property is non-nil, the recordHandler MUST restore the specified keys.
@@ -59,7 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * You MUST check for this property within your recordHandler implementation.
 **/
-@property (nonatomic, strong, readonly, nullable) NSArray<NSString *> *keysToRestore;
+@property (nonatomic, strong, readonly) NSArray *keysToRestore;
 
 /**
  * This property comes directly from the [YapDatabaseCloudKit init...] method.
@@ -87,5 +86,3 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) id versionInfo;
 
 @end
-
-NS_ASSUME_NONNULL_END

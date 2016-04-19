@@ -32,14 +32,14 @@
 	sqlite3_stmt *removeAllStatement;
 }
 
-@synthesize secondaryIndex = parent;
+@synthesize secondaryIndex = secondaryIndex;
 
-- (id)initWithParent:(YapDatabaseSecondaryIndex *)inParent
-  databaseConnection:(YapDatabaseConnection *)inDatabaseConnection
+- (id)initWithSecondaryIndex:(YapDatabaseSecondaryIndex *)inSecondaryIndex
+          databaseConnection:(YapDatabaseConnection *)inDatabaseConnection
 {
 	if ((self = [super init]))
 	{
-		parent = inParent;
+		secondaryIndex = inSecondaryIndex;
 		databaseConnection = inDatabaseConnection;
 		
 		queryCacheLimit = 10;
@@ -89,7 +89,7 @@
 **/
 - (YapDatabaseExtension *)extension
 {
-	return parent;
+	return secondaryIndex;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -179,8 +179,9 @@
 - (id)newReadTransaction:(YapDatabaseReadTransaction *)databaseTransaction
 {
 	YapDatabaseSecondaryIndexTransaction *transaction =
-	    [[YapDatabaseSecondaryIndexTransaction alloc] initWithParentConnection:self
-	                                                       databaseTransaction:databaseTransaction];
+	    [[YapDatabaseSecondaryIndexTransaction alloc]
+	        initWithSecondaryIndexConnection:self
+	                     databaseTransaction:databaseTransaction];
 	
 	return transaction;
 }
@@ -191,38 +192,19 @@
 - (id)newReadWriteTransaction:(YapDatabaseReadWriteTransaction *)databaseTransaction
 {
 	YapDatabaseSecondaryIndexTransaction *transaction =
-	    [[YapDatabaseSecondaryIndexTransaction alloc] initWithParentConnection:self
-	                                                       databaseTransaction:databaseTransaction];
+	    [[YapDatabaseSecondaryIndexTransaction alloc]
+	        initWithSecondaryIndexConnection:self
+	                     databaseTransaction:databaseTransaction];
 	
-	[self prepareForReadWriteTransaction];
+	if (blockDict == nil)
+		blockDict = [NSMutableDictionary dictionaryWithSharedKeySet:secondaryIndex->columnNamesSharedKeySet];
+	
 	return transaction;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark Changeset
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/**
- * Initializes any ivars that a read-write transaction may need.
-**/
-- (void)prepareForReadWriteTransaction
-{
-	if (blockDict == nil)
-		blockDict = [NSMutableDictionary dictionaryWithSharedKeySet:parent->columnNamesSharedKeySet];
-	
-	if (mutationStack == nil)
-		mutationStack = [[YapMutationStack_Bool alloc] init];
-}
-
-- (void)postCommitCleanup
-{
-	[mutationStack clear];
-}
-
-- (void)postRollbackCleanup
-{
-	[mutationStack clear];
-}
 
 /**
  * Required override method from YapDatabaseExtension
@@ -273,16 +255,16 @@
 	if (*statement == NULL)
 	{
 		NSMutableString *string = [NSMutableString stringWithCapacity:100];
-		[string appendFormat:@"INSERT INTO \"%@\" (\"rowid\"", [parent tableName]];
+		[string appendFormat:@"INSERT INTO \"%@\" (\"rowid\"", [secondaryIndex tableName]];
 		
-		for (YapDatabaseSecondaryIndexColumn *column in parent->setup)
+		for (YapDatabaseSecondaryIndexColumn *column in secondaryIndex->setup)
 		{
 			[string appendFormat:@", \"%@\"", column.name];
 		}
 		
 		[string appendString:@") VALUES (?"];
 		
-		NSUInteger count = [parent->setup count];
+		NSUInteger count = [secondaryIndex->setup count];
 		NSUInteger i;
 		for (i = 0; i < count; i++)
 		{
@@ -303,16 +285,16 @@
 	if (*statement == NULL)
 	{
 		NSMutableString *string = [NSMutableString stringWithCapacity:100];
-		[string appendFormat:@"INSERT OR REPLACE INTO \"%@\" (\"rowid\"", [parent tableName]];
+		[string appendFormat:@"INSERT OR REPLACE INTO \"%@\" (\"rowid\"", [secondaryIndex tableName]];
 		
-		for (YapDatabaseSecondaryIndexColumn *column in parent->setup)
+		for (YapDatabaseSecondaryIndexColumn *column in secondaryIndex->setup)
 		{
 			[string appendFormat:@", \"%@\"", column.name];
 		}
 		
 		[string appendString:@") VALUES (?"];
 		
-		NSUInteger count = [parent->setup count];
+		NSUInteger count = [secondaryIndex->setup count];
 		NSUInteger i;
 		for (i = 0; i < count; i++)
 		{
@@ -333,7 +315,7 @@
 	if (*statement == NULL)
 	{
 		NSString *string = [NSString stringWithFormat:
-		  @"DELETE FROM \"%@\" WHERE \"rowid\" = ?;", [parent tableName]];
+		  @"DELETE FROM \"%@\" WHERE \"rowid\" = ?;", [secondaryIndex tableName]];
 		
 		[self prepareStatement:statement withString:string caller:_cmd];
 	}
@@ -347,7 +329,7 @@
 	if (*statement == NULL)
 	{
 		NSString *string = [NSString stringWithFormat:
-		  @"DELETE FROM \"%@\";", [parent tableName]];
+		  @"DELETE FROM \"%@\";", [secondaryIndex tableName]];
 		
 		[self prepareStatement:statement withString:string caller:_cmd];
 	}

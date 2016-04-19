@@ -1,6 +1,5 @@
 #import <Foundation/Foundation.h>
 
-NS_ASSUME_NONNULL_BEGIN
 
 // Macro for lazy programmer (less typing than alloc/init)
 #define YapCollectionKeyCreate(_collection, _key) [[YapCollectionKey alloc] initWithCollection:_collection key:_key]
@@ -13,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 **/
 @interface YapCollectionKey : NSObject <NSCopying, NSCoding>
 
-- (id)initWithCollection:(nullable NSString *)collection key:(NSString *)key;
+- (id)initWithCollection:(NSString *)collection key:(NSString *)key;
 
 @property (nonatomic, strong, readonly) NSString *collection;
 @property (nonatomic, strong, readonly) NSString *key;
@@ -32,5 +31,3 @@ BOOL YapCollectionKeyEqual(const __unsafe_unretained YapCollectionKey *ck1,
                            const __unsafe_unretained YapCollectionKey *ck2);
 
 @end
-
-NS_ASSUME_NONNULL_END

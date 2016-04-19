@@ -1,6 +1,5 @@
 #import "YapDatabaseHooksTransaction.h"
 #import "YapDatabaseHooksPrivate.h"
-#import "YapProxyObjectPrivate.h"
 
 
 @implementation YapDatabaseHooksTransaction
@@ -102,35 +101,12 @@
               withMetadata:(id)metadata
                      rowid:(int64_t)rowid
 {
-	__unsafe_unretained YapWhitelistBlacklist *allowedCollections = parentConnection->parent->allowedCollections;
-	
-	if (allowedCollections && ![allowedCollections isAllowed:ck.collection])
-	{
-		return;
-	}
-	
-	YDBHooks_DidModifyRow didModifyRow = parentConnection->parent.didModifyRow;
-	if (didModifyRow)
+	if (parentConnection->parent->didInsertObject)
 	{
 		__unsafe_unretained YapDatabaseReadWriteTransaction *transaction =
 		  (YapDatabaseReadWriteTransaction *)databaseTransaction;
 		
-		if (proxyObject == nil)
-			proxyObject = [[YapProxyObject alloc] init];
-		
-		if (proxyMetadata == nil)
-			proxyMetadata = [[YapProxyObject alloc] init];
-		
-		[proxyObject resetWithRealObject:object];
-		[proxyMetadata resetWithRealObject:metadata];
-		
-		YapDatabaseHooksBitMask flags =
-		  YapDatabaseHooksInsertedRow | YapDatabaseHooksChangedObject | YapDatabaseHooksChangedMetadata;
-		
-		didModifyRow(transaction, ck.collection, ck.key, proxyObject, proxyMetadata, flags);
-		
-		[proxyObject reset];
-		[proxyMetadata reset];
+		parentConnection->parent->didInsertObject(transaction, ck.collection, ck.key, object, metadata);
 	}
 }
 
@@ -150,35 +126,12 @@
               withMetadata:(id)metadata
                      rowid:(int64_t)rowid
 {
-	__unsafe_unretained YapWhitelistBlacklist *allowedCollections = parentConnection->parent->allowedCollections;
-	
-	if (allowedCollections && ![allowedCollections isAllowed:ck.collection])
-	{
-		return;
-	}
-	
-	YDBHooks_DidModifyRow didModifyRow = parentConnection->parent.didModifyRow;
-	if (didModifyRow)
+	if (parentConnection->parent->didUpdateObject)
 	{
 		__unsafe_unretained YapDatabaseReadWriteTransaction *transaction =
 		  (YapDatabaseReadWriteTransaction *)databaseTransaction;
 		
-		if (proxyObject == nil)
-			proxyObject = [[YapProxyObject alloc] init];
-		
-		if (proxyMetadata == nil)
-			proxyMetadata = [[YapProxyObject alloc] init];
-		
-		[proxyObject resetWithRealObject:object];
-		[proxyMetadata resetWithRealObject:metadata];
-		
-		YapDatabaseHooksBitMask flags =
-		  YapDatabaseHooksUpdatedRow | YapDatabaseHooksChangedObject | YapDatabaseHooksChangedMetadata;
-		
-		didModifyRow(transaction, ck.collection, ck.key, proxyObject, proxyMetadata, flags);
-		
-		[proxyObject reset];
-		[proxyMetadata reset];
+		parentConnection->parent->didUpdateObject(transaction, ck.collection, ck.key, object, metadata);
 	}
 }
 
@@ -196,34 +149,12 @@
            forCollectionKey:(YapCollectionKey *)ck
                   withRowid:(int64_t)rowid
 {
-	__unsafe_unretained YapWhitelistBlacklist *allowedCollections = parentConnection->parent->allowedCollections;
-	
-	if (allowedCollections && ![allowedCollections isAllowed:ck.collection])
-	{
-		return;
-	}
-	
-	YDBHooks_DidModifyRow didModifyRow = parentConnection->parent.didModifyRow;
-	if (didModifyRow)
+	if (parentConnection->parent->didReplaceObject)
 	{
 		__unsafe_unretained YapDatabaseReadWriteTransaction *transaction =
 		  (YapDatabaseReadWriteTransaction *)databaseTransaction;
 		
-		if (proxyObject == nil)
-			proxyObject = [[YapProxyObject alloc] init];
-		
-		if (proxyMetadata == nil)
-			proxyMetadata = [[YapProxyObject alloc] init];
-		
-		[proxyObject resetWithRealObject:object];
-		[proxyMetadata resetWithRowid:rowid collectionKey:ck isMetadata:YES transaction:transaction];
-		
-		YapDatabaseHooksBitMask flags = YapDatabaseHooksUpdatedRow | YapDatabaseHooksChangedObject;
-		
-		didModifyRow(transaction, ck.collection, ck.key, proxyObject, proxyMetadata, flags);
-		
-		[proxyObject reset];
-		[proxyMetadata reset];
+		parentConnection->parent->didReplaceObject(transaction, ck.collection, ck.key, object);
 	}
 }
 
@@ -241,34 +172,12 @@
              forCollectionKey:(YapCollectionKey *)ck
                     withRowid:(int64_t)rowid
 {
-	__unsafe_unretained YapWhitelistBlacklist *allowedCollections = parentConnection->parent->allowedCollections;
-	
-	if (allowedCollections && ![allowedCollections isAllowed:ck.collection])
-	{
-		return;
-	}
-	
-	YDBHooks_DidModifyRow didModifyRow = parentConnection->parent.didModifyRow;
-	if (didModifyRow)
+	if (parentConnection->parent->didReplaceMetadata)
 	{
 		__unsafe_unretained YapDatabaseReadWriteTransaction *transaction =
 		  (YapDatabaseReadWriteTransaction *)databaseTransaction;
 		
-		if (proxyObject == nil)
-			proxyObject = [[YapProxyObject alloc] init];
-		
-		if (proxyMetadata == nil)
-			proxyMetadata = [[YapProxyObject alloc] init];
-		
-		[proxyObject resetWithRowid:rowid collectionKey:ck isMetadata:NO transaction:transaction];
-		[proxyMetadata resetWithRealObject:metadata];
-		
-		YapDatabaseHooksBitMask flags = YapDatabaseHooksUpdatedRow | YapDatabaseHooksChangedMetadata;
-		
-		didModifyRow(transaction, ck.collection, ck.key, proxyObject, proxyMetadata, flags);
-		
-		[proxyObject reset];
-		[proxyMetadata reset];
+		parentConnection->parent->didReplaceMetadata(transaction, ck.collection, ck.key, metadata);
 	}
 }
 
@@ -281,35 +190,7 @@
 **/
 - (void)handleTouchObjectForCollectionKey:(YapCollectionKey *)ck withRowid:(int64_t)rowid
 {
-	__unsafe_unretained YapWhitelistBlacklist *allowedCollections = parentConnection->parent->allowedCollections;
-	
-	if (allowedCollections && ![allowedCollections isAllowed:ck.collection])
-	{
-		return;
-	}
-	
-	YDBHooks_DidModifyRow didModifyRow = parentConnection->parent.didModifyRow;
-	if (didModifyRow)
-	{
-		__unsafe_unretained YapDatabaseReadWriteTransaction *transaction =
-		  (YapDatabaseReadWriteTransaction *)databaseTransaction;
-		
-		if (proxyObject == nil)
-			proxyObject = [[YapProxyObject alloc] init];
-		
-		if (proxyMetadata == nil)
-			proxyMetadata = [[YapProxyObject alloc] init];
-		
-		[proxyObject resetWithRowid:rowid collectionKey:ck isMetadata:NO transaction:transaction];
-		[proxyMetadata resetWithRowid:rowid collectionKey:ck isMetadata:YES transaction:transaction];
-		
-		YapDatabaseHooksBitMask flags = YapDatabaseHooksTouchedObject;
-		
-		didModifyRow(transaction, ck.collection, ck.key, proxyObject, proxyMetadata, flags);
-		
-		[proxyObject reset];
-		[proxyMetadata reset];
-	}
+	// Nothing to do here
 }
 
 /**
@@ -321,35 +202,7 @@
 **/
 - (void)handleTouchMetadataForCollectionKey:(YapCollectionKey *)ck withRowid:(int64_t)rowid
 {
-	__unsafe_unretained YapWhitelistBlacklist *allowedCollections = parentConnection->parent->allowedCollections;
-	
-	if (allowedCollections && ![allowedCollections isAllowed:ck.collection])
-	{
-		return;
-	}
-	
-	YDBHooks_DidModifyRow didModifyRow = parentConnection->parent.didModifyRow;
-	if (didModifyRow)
-	{
-		__unsafe_unretained YapDatabaseReadWriteTransaction *transaction =
-		  (YapDatabaseReadWriteTransaction *)databaseTransaction;
-		
-		if (proxyObject == nil)
-			proxyObject = [[YapProxyObject alloc] init];
-		
-		if (proxyMetadata == nil)
-			proxyMetadata = [[YapProxyObject alloc] init];
-		
-		[proxyObject resetWithRowid:rowid collectionKey:ck isMetadata:NO transaction:transaction];
-		[proxyMetadata resetWithRowid:rowid collectionKey:ck isMetadata:YES transaction:transaction];
-		
-		YapDatabaseHooksBitMask flags = YapDatabaseHooksTouchedMetadata;
-		
-		didModifyRow(transaction, ck.collection, ck.key, proxyObject, proxyMetadata, flags);
-		
-		[proxyObject reset];
-		[proxyMetadata reset];
-	}
+	// Nothing to do here
 }
 
 /**
@@ -359,37 +212,9 @@
  * Corresponds to the following method(s) in YapDatabaseReadWriteTransaction:
  * - touchRowForKey:inCollection:
 **/
-- (void)handleTouchRowForCollectionKey:(YapCollectionKey *)ck withRowid:(int64_t)rowid
+- (void)handleTouchRowForCollectionKey:(YapCollectionKey *)collectionKey withRowid:(int64_t)rowid
 {
-	__unsafe_unretained YapWhitelistBlacklist *allowedCollections = parentConnection->parent->allowedCollections;
-	
-	if (allowedCollections && ![allowedCollections isAllowed:ck.collection])
-	{
-		return;
-	}
-	
-	YDBHooks_DidModifyRow didModifyRow = parentConnection->parent.didModifyRow;
-	if (didModifyRow)
-	{
-		__unsafe_unretained YapDatabaseReadWriteTransaction *transaction =
-		  (YapDatabaseReadWriteTransaction *)databaseTransaction;
-		
-		if (proxyObject == nil)
-			proxyObject = [[YapProxyObject alloc] init];
-		
-		if (proxyMetadata == nil)
-			proxyMetadata = [[YapProxyObject alloc] init];
-		
-		[proxyObject resetWithRowid:rowid collectionKey:ck isMetadata:NO transaction:transaction];
-		[proxyMetadata resetWithRowid:rowid collectionKey:ck isMetadata:YES transaction:transaction];
-		
-		YapDatabaseHooksBitMask flags = YapDatabaseHooksTouchedObject | YapDatabaseHooksTouchedMetadata;
-		
-		didModifyRow(transaction, ck.collection, ck.key, proxyObject, proxyMetadata, flags);
-		
-		[proxyObject reset];
-		[proxyMetadata reset];
-	}
+	// Nothing to do here
 }
 
 /**
@@ -401,20 +226,12 @@
 **/
 - (void)handleRemoveObjectForCollectionKey:(YapCollectionKey *)ck withRowid:(int64_t)rowid
 {
-	__unsafe_unretained YapWhitelistBlacklist *allowedCollections = parentConnection->parent->allowedCollections;
-	
-	if (allowedCollections && ![allowedCollections isAllowed:ck.collection])
-	{
-		return;
-	}
-	
-	YDBHooks_DidRemoveRow didRemoveRow = parentConnection->parent.didRemoveRow;
-	if (didRemoveRow)
+	if (parentConnection->parent->didRemoveObject)
 	{
 		__unsafe_unretained YapDatabaseReadWriteTransaction *transaction =
 		  (YapDatabaseReadWriteTransaction *)databaseTransaction;
 		
-		didRemoveRow(transaction, ck.collection, ck.key);
+		parentConnection->parent->didRemoveObject(transaction, ck.collection, ck.key);
 	}
 }
 
@@ -435,23 +252,12 @@
 **/
 - (void)handleRemoveObjectsForKeys:(NSArray *)keys inCollection:(NSString *)collection withRowids:(NSArray *)rowids
 {
-	__unsafe_unretained YapWhitelistBlacklist *allowedCollections = parentConnection->parent->allowedCollections;
-	
-	if (allowedCollections && ![allowedCollections isAllowed:collection])
-	{
-		return;
-	}
-	
-	YDBHooks_DidRemoveRow didRemoveRow = parentConnection->parent.didRemoveRow;
-	if (didRemoveRow)
+	if (parentConnection->parent->didRemoveObjects)
 	{
 		__unsafe_unretained YapDatabaseReadWriteTransaction *transaction =
 		  (YapDatabaseReadWriteTransaction *)databaseTransaction;
 		
-		for (NSString *key in keys)
-		{
-			didRemoveRow(transaction, collection, key);
-		}
+		parentConnection->parent->didRemoveObjects(transaction, collection, keys);
 	}
 }
 
@@ -463,13 +269,12 @@
 **/
 - (void)handleRemoveAllObjectsInAllCollections
 {
-	YDBHooks_DidRemoveAllRows didRemoveAllRows = parentConnection->parent.didRemoveAllRows;
-	if (didRemoveAllRows)
+	if (parentConnection->parent->didRemoveAllObjectsInAllCollections)
 	{
 		__unsafe_unretained YapDatabaseReadWriteTransaction *transaction =
 		  (YapDatabaseReadWriteTransaction *)databaseTransaction;
 		
-		didRemoveAllRows(transaction);
+		parentConnection->parent->didRemoveAllObjectsInAllCollections(transaction);
 	}
 }
 
@@ -492,35 +297,12 @@
               forCollectionKey:(YapCollectionKey *)ck
                   withMetadata:(id)metadata
 {
-	__unsafe_unretained YapWhitelistBlacklist *allowedCollections = parentConnection->parent->allowedCollections;
-	
-	if (allowedCollections && ![allowedCollections isAllowed:ck.collection])
-	{
-		return;
-	}
-	
-	YDBHooks_WillModifyRow willModifyRow = parentConnection->parent.willModifyRow;
-	if (willModifyRow)
+	if (parentConnection->parent->willInsertObject)
 	{
 		__unsafe_unretained YapDatabaseReadWriteTransaction *transaction =
 		  (YapDatabaseReadWriteTransaction *)databaseTransaction;
 		
-		if (proxyObject == nil)
-			proxyObject = [[YapProxyObject alloc] init];
-		
-		if (proxyMetadata == nil)
-			proxyMetadata = [[YapProxyObject alloc] init];
-		
-		[proxyObject resetWithRealObject:object];
-		[proxyMetadata resetWithRealObject:metadata];
-		
-		YapDatabaseHooksBitMask flags =
-		  YapDatabaseHooksInsertedRow | YapDatabaseHooksChangedObject | YapDatabaseHooksChangedMetadata;
-		
-		willModifyRow(transaction, ck.collection, ck.key, proxyObject, proxyMetadata, flags);
-		
-		[proxyObject reset];
-		[proxyMetadata reset];
+		parentConnection->parent->willInsertObject(transaction, ck.collection, ck.key, object, metadata);
 	}
 }
 
@@ -540,35 +322,12 @@
                   withMetadata:(id)metadata
                          rowid:(int64_t)rowid
 {
-	__unsafe_unretained YapWhitelistBlacklist *allowedCollections = parentConnection->parent->allowedCollections;
-	
-	if (allowedCollections && ![allowedCollections isAllowed:ck.collection])
-	{
-		return;
-	}
-	
-	YDBHooks_WillModifyRow willModifyRow = parentConnection->parent.willModifyRow;
-	if (willModifyRow)
+	if (parentConnection->parent->willUpdateObject)
 	{
 		__unsafe_unretained YapDatabaseReadWriteTransaction *transaction =
 		  (YapDatabaseReadWriteTransaction *)databaseTransaction;
 		
-		if (proxyObject == nil)
-			proxyObject = [[YapProxyObject alloc] init];
-		
-		if (proxyMetadata == nil)
-			proxyMetadata = [[YapProxyObject alloc] init];
-		
-		[proxyObject resetWithRealObject:object];
-		[proxyMetadata resetWithRealObject:metadata];
-		
-		YapDatabaseHooksBitMask flags =
-		  YapDatabaseHooksUpdatedRow | YapDatabaseHooksChangedObject | YapDatabaseHooksChangedMetadata;
-		
-		willModifyRow(transaction, ck.collection, ck.key, proxyObject, proxyMetadata, flags);
-		
-		[proxyObject reset];
-		[proxyMetadata reset];
+		parentConnection->parent->willUpdateObject(transaction, ck.collection, ck.key, object, metadata);
 	}
 }
 
@@ -586,35 +345,12 @@
                forCollectionKey:(YapCollectionKey *)ck
                       withRowid:(int64_t)rowid
 {
-	__unsafe_unretained YapWhitelistBlacklist *allowedCollections = parentConnection->parent->allowedCollections;
-	
-	if (allowedCollections && ![allowedCollections isAllowed:ck.collection])
-	{
-		return;
-	}
-	
-	YDBHooks_WillModifyRow willModifyRow = parentConnection->parent.willModifyRow;
-	if (willModifyRow)
+	if (parentConnection->parent->willReplaceObject)
 	{
 		__unsafe_unretained YapDatabaseReadWriteTransaction *transaction =
 		  (YapDatabaseReadWriteTransaction *)databaseTransaction;
 		
-		if (proxyObject == nil)
-			proxyObject = [[YapProxyObject alloc] init];
-		
-		if (proxyMetadata == nil)
-			proxyMetadata = [[YapProxyObject alloc] init];
-		
-		[proxyObject resetWithRealObject:object];
-		[proxyMetadata resetWithRowid:rowid collectionKey:ck isMetadata:YES transaction:transaction];
-		
-		YapDatabaseHooksBitMask flags =
-		  YapDatabaseHooksUpdatedRow | YapDatabaseHooksChangedObject;
-		
-		willModifyRow(transaction, ck.collection, ck.key, proxyObject, proxyMetadata, flags);
-		
-		[proxyObject reset];
-		[proxyMetadata reset];
+		parentConnection->parent->willReplaceObject(transaction, ck.collection, ck.key, object);
 	}
 }
 
@@ -632,35 +368,12 @@
                  forCollectionKey:(YapCollectionKey *)ck
                         withRowid:(int64_t)rowid
 {
-	__unsafe_unretained YapWhitelistBlacklist *allowedCollections = parentConnection->parent->allowedCollections;
-	
-	if (allowedCollections && ![allowedCollections isAllowed:ck.collection])
-	{
-		return;
-	}
-	
-	YDBHooks_WillModifyRow willModifyRow = parentConnection->parent.willModifyRow;
-	if (willModifyRow)
+	if (parentConnection->parent->willReplaceMetadata)
 	{
 		__unsafe_unretained YapDatabaseReadWriteTransaction *transaction =
 		  (YapDatabaseReadWriteTransaction *)databaseTransaction;
 		
-		if (proxyObject == nil)
-			proxyObject = [[YapProxyObject alloc] init];
-		
-		if (proxyMetadata == nil)
-			proxyMetadata = [[YapProxyObject alloc] init];
-		
-		[proxyObject resetWithRowid:rowid collectionKey:ck isMetadata:NO transaction:transaction];
-		[proxyMetadata resetWithRealObject:metadata];
-		
-		YapDatabaseHooksBitMask flags =
-		  YapDatabaseHooksUpdatedRow | YapDatabaseHooksChangedMetadata;
-		
-		willModifyRow(transaction, ck.collection, ck.key, proxyObject, proxyMetadata, flags);
-		
-		[proxyObject reset];
-		[proxyMetadata reset];
+		parentConnection->parent->willReplaceMetadata(transaction, ck.collection, ck.key, metadata);
 	}
 }
 
@@ -673,20 +386,12 @@
 **/
 - (void)handleWillRemoveObjectForCollectionKey:(YapCollectionKey *)ck withRowid:(int64_t)rowid
 {
-	__unsafe_unretained YapWhitelistBlacklist *allowedCollections = parentConnection->parent->allowedCollections;
-	
-	if (allowedCollections && ![allowedCollections isAllowed:ck.collection])
-	{
-		return;
-	}
-	
-	YDBHooks_WillRemoveRow willRemoveRow = parentConnection->parent.willRemoveRow;
-	if (willRemoveRow)
+	if (parentConnection->parent->willRemoveObject)
 	{
 		__unsafe_unretained YapDatabaseReadWriteTransaction *transaction =
 		  (YapDatabaseReadWriteTransaction *)databaseTransaction;
 		
-		willRemoveRow(transaction, ck.collection, ck.key);
+		parentConnection->parent->willRemoveObject(transaction, ck.collection, ck.key);
 	}
 }
 
@@ -707,23 +412,12 @@
 **/
 - (void)handleWillRemoveObjectsForKeys:(NSArray *)keys inCollection:(NSString *)collection withRowids:(NSArray *)rowids
 {
-	__unsafe_unretained YapWhitelistBlacklist *allowedCollections = parentConnection->parent->allowedCollections;
-	
-	if (allowedCollections && ![allowedCollections isAllowed:collection])
-	{
-		return;
-	}
-	
-	YDBHooks_WillRemoveRow willRemoveRow = parentConnection->parent.willRemoveRow;
-	if (willRemoveRow)
+	if (parentConnection->parent->willRemoveObjects)
 	{
 		__unsafe_unretained YapDatabaseReadWriteTransaction *transaction =
 		  (YapDatabaseReadWriteTransaction *)databaseTransaction;
 		
-		for (NSString *key in keys)
-		{
-			willRemoveRow(transaction, collection, key);
-		}
+		parentConnection->parent->willRemoveObjects(transaction, collection, keys);
 	}
 }
 
@@ -736,13 +430,12 @@
 **/
 - (void)handleWillRemoveAllObjectsInAllCollections
 {
-	YDBHooks_WillRemoveAllRows willRemoveAllRows = parentConnection->parent.willRemoveAllRows;
-	if (willRemoveAllRows)
+	if (parentConnection->parent->willRemoveAllObjectsInAllCollections)
 	{
 		__unsafe_unretained YapDatabaseReadWriteTransaction *transaction =
 		  (YapDatabaseReadWriteTransaction *)databaseTransaction;
 		
-		willRemoveAllRows(transaction);
+		parentConnection->parent->willRemoveAllObjectsInAllCollections(transaction);
 	}
 }
 

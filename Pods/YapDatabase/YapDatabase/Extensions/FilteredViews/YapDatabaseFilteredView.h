@@ -6,7 +6,6 @@
 #import "YapDatabaseFilteredViewConnection.h"
 #import "YapDatabaseFilteredViewTransaction.h"
 
-NS_ASSUME_NONNULL_BEGIN
 
 @interface YapDatabaseFilteredView : YapDatabaseView
 
@@ -43,18 +42,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (id)initWithParentViewName:(NSString *)viewName
                    filtering:(YapDatabaseViewFiltering *)filtering
-                  versionTag:(nullable NSString *)versionTag;
+                  versionTag:(NSString *)versionTag;
 
 - (id)initWithParentViewName:(NSString *)viewName
                    filtering:(YapDatabaseViewFiltering *)filtering
-                  versionTag:(nullable NSString *)versionTag
-                     options:(nullable YapDatabaseViewOptions *)options;
+                  versionTag:(NSString *)versionTag
+                     options:(YapDatabaseViewOptions *)options;
 
 
 @property (nonatomic, strong, readonly) NSString *parentViewName;
 
-@property (nonatomic, strong, readonly) YapDatabaseViewFiltering *filtering;
+@property (nonatomic, strong, readonly) YapDatabaseViewFilteringBlock filteringBlock;
+@property (nonatomic, assign, readonly) YapDatabaseViewBlockType filteringBlockType;
 
 @end
-
-NS_ASSUME_NONNULL_END

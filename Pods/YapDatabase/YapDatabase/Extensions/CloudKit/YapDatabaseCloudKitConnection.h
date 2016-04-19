@@ -3,7 +3,6 @@
 
 @class YapDatabaseCloudKit;
 
-NS_ASSUME_NONNULL_BEGIN
 
 @interface YapDatabaseCloudKitConnection : YapDatabaseExtensionConnection
 
@@ -13,5 +12,3 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) YapDatabaseCloudKit *cloudKit;
 
 @end
-
-NS_ASSUME_NONNULL_END

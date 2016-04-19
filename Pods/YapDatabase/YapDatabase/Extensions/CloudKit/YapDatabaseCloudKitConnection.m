@@ -352,7 +352,7 @@
 		NSMutableArray *keysToRemove = [NSMutableArray arrayWithCapacity:removeCapacity];
 		NSMutableArray *keysToUpdate = [NSMutableArray arrayWithCapacity:updateCapacity];
 		
-		[cleanMappingTableInfoCache enumerateKeysWithBlock:^(NSNumber *rowid, BOOL *stop) {
+		[cleanMappingTableInfoCache enumerateKeysWithBlock:^(id key, BOOL *stop) {
 			
 			// Order matters.
 			// Consider the following database change:
@@ -360,22 +360,22 @@
 			// [transaction removeAllObjects];
 			// [transaction setObject:obj forKey:key];
 			
-			if ([in_changeset_mappingTableInfo objectForKey:rowid])
-				[keysToUpdate addObject:rowid];
-			else if (in_changeset_reset || [in_changeset_deletedRowids containsObject:rowid])
-				[keysToRemove addObject:rowid];
+			if ([in_changeset_mappingTableInfo objectForKey:key])
+				[keysToUpdate addObject:key];
+			else if (in_changeset_reset || [in_changeset_deletedRowids containsObject:key])
+				[keysToRemove addObject:key];
 		}];
 		
 		[cleanMappingTableInfoCache removeObjectsForKeys:keysToRemove];
 		
-		for (NSNumber *rowid in keysToUpdate)
+		for (NSString *key in keysToUpdate)
 		{
-			YDBCKCleanMappingTableInfo *cleanMappingTableInfo = [in_changeset_mappingTableInfo objectForKey:rowid];
+			YDBCKCleanMappingTableInfo *cleanMappingTableInfo = [in_changeset_mappingTableInfo objectForKey:key];
 			
 			if (cleanMappingTableInfo)
-				[cleanMappingTableInfoCache setObject:cleanMappingTableInfo forKey:rowid];
+				[cleanMappingTableInfoCache setObject:cleanMappingTableInfo forKey:key];
 			else
-				[cleanMappingTableInfoCache removeObjectForKey:rowid];
+				[cleanMappingTableInfoCache removeObjectForKey:key];
 		}
 	}
 	
@@ -400,7 +400,7 @@
 		NSMutableArray *keysToRemove = [NSMutableArray arrayWithCapacity:removeCapacity];
 		NSMutableArray *keysToUpdate = [NSMutableArray arrayWithCapacity:updateCapacity];
 		
-		[cleanRecordTableInfoCache enumerateKeysWithBlock:^(NSString *hash, BOOL *stop) {
+		[cleanRecordTableInfoCache enumerateKeysWithBlock:^(id key, BOOL *stop) {
 			
 			// Order matters.
 			// Consider the following database change:
@@ -408,22 +408,22 @@
 			// [transaction removeAllObjects];
 			// [transaction setObject:obj forKey:key];
 			
-			if ([in_changeset_recordTableInfo objectForKey:hash])
-				[keysToUpdate addObject:hash];
-			else if (in_changeset_reset || [in_changeset_deletedHashes containsObject:hash])
-				[keysToRemove addObject:hash];
+			if ([in_changeset_recordTableInfo objectForKey:key])
+				[keysToUpdate addObject:key];
+			else if (in_changeset_reset || [in_changeset_deletedHashes containsObject:key])
+				[keysToRemove addObject:key];
 		}];
 		
 		[cleanRecordTableInfoCache removeObjectsForKeys:keysToRemove];
 		
-		for (NSString *hash in keysToUpdate)
+		for (NSString *key in keysToUpdate)
 		{
-			YDBCKCleanRecordTableInfo *cleanRecordTableInfo = [in_changeset_recordTableInfo objectForKey:hash];
+			YDBCKCleanRecordTableInfo *cleanRecordTableInfo = [in_changeset_recordTableInfo objectForKey:key];
 			
 			if (cleanRecordTableInfo)
-				[cleanRecordTableInfoCache setObject:cleanRecordTableInfo forKey:hash];
+				[cleanRecordTableInfoCache setObject:cleanRecordTableInfo forKey:key];
 			else
-				[cleanRecordTableInfoCache removeObjectForKey:hash];
+				[cleanRecordTableInfoCache removeObjectForKey:key];
 		}
 	}
 }

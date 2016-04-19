@@ -4,7 +4,6 @@
 #import "YapWhitelistBlacklist.h"
 #import "YapDatabaseFullTextSearchSnippetOptions.h"
 
-NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Note: This class extends YapDatabaseViewOptions.
@@ -30,15 +29,13 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * The default value is nil.
 **/
-@property (nonatomic, strong, readwrite, nullable) YapWhitelistBlacklist *allowedGroups;
+@property (nonatomic, strong, readwrite) YapWhitelistBlacklist *allowedGroups;
 
 /**
  * Set this option to include snippets with the search results.
  *
  * The default value is nil.
 **/
-@property (nonatomic, copy, readwrite, nullable) YapDatabaseFullTextSearchSnippetOptions *snippetOptions;
+@property (nonatomic, copy, readwrite) YapDatabaseFullTextSearchSnippetOptions *snippetOptions;
 
 @end
-
-NS_ASSUME_NONNULL_END

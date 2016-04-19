@@ -1,14 +1,11 @@
 #import <Foundation/Foundation.h>
 
 #import "YapDatabaseExtension.h"
-
 #import "YapDatabaseSecondaryIndexSetup.h"
 #import "YapDatabaseSecondaryIndexHandler.h"
 #import "YapDatabaseSecondaryIndexOptions.h"
 #import "YapDatabaseSecondaryIndexConnection.h"
 #import "YapDatabaseSecondaryIndexTransaction.h"
-
-NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Welcome to YapDatabase!
@@ -81,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
 **/
 - (id)initWithSetup:(YapDatabaseSecondaryIndexSetup *)setup
             handler:(YapDatabaseSecondaryIndexHandler *)handler
-         versionTag:(nullable NSString *)versionTag;
+         versionTag:(NSString *)versionTag;
 
 /**
  * Creates a new secondary index extension.
@@ -115,8 +112,8 @@ NS_ASSUME_NONNULL_BEGIN
 **/
 - (id)initWithSetup:(YapDatabaseSecondaryIndexSetup *)setup
             handler:(YapDatabaseSecondaryIndexHandler *)handler
-         versionTag:(nullable NSString *)versionTag
-            options:(nullable YapDatabaseSecondaryIndexOptions *)options;
+         versionTag:(NSString *)versionTag
+            options:(YapDatabaseSecondaryIndexOptions *)options;
 
 
 /* Inherited from YapDatabaseExtension
@@ -135,5 +132,3 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readonly) NSString *versionTag;
 
 @end
-
-NS_ASSUME_NONNULL_END

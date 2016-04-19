@@ -1,9 +1,5 @@
 #import <Foundation/Foundation.h>
-
 #import "YapDatabaseViewTypes.h"
-#import "YapDatabaseExtensionTypes.h"
-
-NS_ASSUME_NONNULL_BEGIN
 
 /**
  * The filtering block removes items from this view that are in the parent view.
@@ -27,36 +23,28 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef id YapDatabaseViewFilteringBlock; // One of the YapDatabaseViewGroupingX types below.
 
-typedef BOOL (^YapDatabaseViewFilteringWithKeyBlock)
-                (YapDatabaseReadTransaction *transaction, NSString *group,
+typedef BOOL (^YapDatabaseViewFilteringWithKeyBlock)                       \
+                (YapDatabaseReadTransaction *transaction, NSString *group, \
                    NSString *collection, NSString *key);
 
-typedef BOOL (^YapDatabaseViewFilteringWithObjectBlock)
-                (YapDatabaseReadTransaction *transaction, NSString *group,
+typedef BOOL (^YapDatabaseViewFilteringWithObjectBlock)                    \
+                (YapDatabaseReadTransaction *transaction, NSString *group, \
                    NSString *collection, NSString *key, id object);
 
-typedef BOOL (^YapDatabaseViewFilteringWithMetadataBlock)
-                (YapDatabaseReadTransaction *transaction, NSString *group,
-                   NSString *collection, NSString *key, __nullable id metadata);
+typedef BOOL (^YapDatabaseViewFilteringWithMetadataBlock)                  \
+                (YapDatabaseReadTransaction *transaction, NSString *group, \
+                   NSString *collection, NSString *key, id metadata);
 
-typedef BOOL (^YapDatabaseViewFilteringWithRowBlock)
-                (YapDatabaseReadTransaction *transaction, NSString *group,
-                   NSString *collection, NSString *key, id object, __nullable id metadata);
+typedef BOOL (^YapDatabaseViewFilteringWithRowBlock)                       \
+                (YapDatabaseReadTransaction *transaction, NSString *group, \
+                   NSString *collection, NSString *key, id object, id metadata);
 
-+ (instancetype)withKeyBlock:(YapDatabaseViewFilteringWithKeyBlock)block;
-+ (instancetype)withObjectBlock:(YapDatabaseViewFilteringWithObjectBlock)block;
-+ (instancetype)withMetadataBlock:(YapDatabaseViewFilteringWithMetadataBlock)block;
-+ (instancetype)withRowBlock:(YapDatabaseViewFilteringWithRowBlock)block;
++ (instancetype)withKeyBlock:(YapDatabaseViewFilteringWithKeyBlock)filteringBlock;
++ (instancetype)withObjectBlock:(YapDatabaseViewFilteringWithObjectBlock)filteringBlock;
++ (instancetype)withMetadataBlock:(YapDatabaseViewFilteringWithMetadataBlock)filteringBlock;
++ (instancetype)withRowBlock:(YapDatabaseViewFilteringWithRowBlock)filteringBlock;
 
-+ (instancetype)withOptions:(YapDatabaseBlockInvoke)ops keyBlock:(YapDatabaseViewFilteringWithKeyBlock)block;
-+ (instancetype)withOptions:(YapDatabaseBlockInvoke)ops objectBlock:(YapDatabaseViewFilteringWithObjectBlock)block;
-+ (instancetype)withOptions:(YapDatabaseBlockInvoke)ops metadataBlock:(YapDatabaseViewFilteringWithMetadataBlock)block;
-+ (instancetype)withOptions:(YapDatabaseBlockInvoke)ops rowBlock:(YapDatabaseViewFilteringWithRowBlock)block;
-
-@property (nonatomic, strong, readonly) YapDatabaseViewFilteringBlock block;
-@property (nonatomic, assign, readonly) YapDatabaseBlockType          blockType;
-@property (nonatomic, assign, readonly) YapDatabaseBlockInvoke        blockInvokeOptions;
+@property (nonatomic, strong, readonly) YapDatabaseViewFilteringBlock filteringBlock;
+@property (nonatomic, assign, readonly) YapDatabaseViewBlockType filteringBlockType;
 
 @end
-
-NS_ASSUME_NONNULL_END

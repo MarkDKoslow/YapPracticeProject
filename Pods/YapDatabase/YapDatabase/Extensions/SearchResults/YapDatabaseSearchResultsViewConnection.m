@@ -260,14 +260,18 @@
  * We need to update our groupingBlock/sortingBlock to match,
  * but NOT the versionTag (since it didn't change).
 **/
-- (void)setGrouping:(YapDatabaseViewGrouping *)newGrouping
-            sorting:(YapDatabaseViewSorting *)newSorting
+- (void)setGroupingBlock:(YapDatabaseViewGroupingBlock)newGroupingBlock
+       groupingBlockType:(YapDatabaseViewBlockType)newGroupingBlockType
+            sortingBlock:(YapDatabaseViewSortingBlock)newSortingBlock
+        sortingBlockType:(YapDatabaseViewBlockType)newSortingBlockType
 {
-	grouping = newGrouping;
-	groupingChanged = YES;
+	groupingBlock     = newGroupingBlock;
+	groupingBlockType = newGroupingBlockType;
+	sortingBlock      = newSortingBlock;
+	sortingBlockType  = newSortingBlockType;
 	
-	sorting = newSorting;
-	sortingChanged = YES;
+	groupingBlockChanged = YES;
+	sortingBlockChanged = YES;
 }
 
 @end

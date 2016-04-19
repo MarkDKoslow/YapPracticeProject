@@ -21,9 +21,6 @@
 @synthesize pragmaMMapSize = pragmaMMapSize;
 #ifdef SQLITE_HAS_CODEC
 @synthesize cipherKeyBlock = cipherKeyBlock;
-@synthesize kdfIterNumber = kdfIterNumber;
-@synthesize cipherDefaultkdfIterNumber = cipherDefaultkdfIterNumber;
-@synthesize cipherPageSize = cipherPageSize;
 #endif
 @synthesize aggressiveWALTruncationSize = aggressiveWALTruncationSize;
 
@@ -51,9 +48,6 @@
 	copy->pragmaMMapSize = pragmaMMapSize;
 #ifdef SQLITE_HAS_CODEC
     copy->cipherKeyBlock = cipherKeyBlock;
-    copy->kdfIterNumber = kdfIterNumber;
-    copy->cipherDefaultkdfIterNumber = cipherDefaultkdfIterNumber;
-    copy->cipherPageSize = cipherPageSize;
 #endif
 	copy->aggressiveWALTruncationSize = aggressiveWALTruncationSize;
 	

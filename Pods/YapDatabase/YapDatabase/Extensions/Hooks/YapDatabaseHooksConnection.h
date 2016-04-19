@@ -3,7 +3,6 @@
 
 @class YapDatabaseHooks;
 
-NS_ASSUME_NONNULL_BEGIN
 
 @interface YapDatabaseHooksConnection : YapDatabaseExtensionConnection
 
@@ -13,5 +12,3 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) YapDatabaseHooks *parent;
 
 @end
-
-NS_ASSUME_NONNULL_END

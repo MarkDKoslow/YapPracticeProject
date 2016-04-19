@@ -3,7 +3,6 @@
 #import "YapDatabaseExtensionTransaction.h"
 #import "YapDatabaseQuery.h"
 
-NS_ASSUME_NONNULL_BEGIN
 
 @interface YapDatabaseRTreeIndexTransaction : YapDatabaseExtensionTransaction
 
@@ -23,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * You can also pass parameters to the query using the standard SQLite placeholder:
  *
- * query = [YapDatabaseQuery queryWithFormat:@"WHERE minLon > ? AND maxLat <= ?", @(minLon), @(maxLat)];
+ * query = [YapDatabaseQuery queryWithFormat:@"WHERE minLon > ? AND maxLat == ?", @(minLon), @(maxLat)];
  * [[transaction ext:@"idx"] enumerateKeysMatchingQuery:query usingBlock:^(NSString *key, BOOL *stop) {
  *
  *     // ...
@@ -41,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)enumerateKeysAndMetadataMatchingQuery:(YapDatabaseQuery *)query
                                    usingBlock:
-                            (void (^)(NSString *collection, NSString *key, _Nullable id metadata, BOOL *stop))block;
+                            (void (^)(NSString *collection, NSString *key, id metadata, BOOL *stop))block;
 
 - (BOOL)enumerateKeysAndObjectsMatchingQuery:(YapDatabaseQuery *)query
                                   usingBlock:
@@ -49,29 +48,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)enumerateRowsMatchingQuery:(YapDatabaseQuery *)query
                         usingBlock:
-                            (void (^)(NSString *collection, NSString *key, id object, _Nullable id metadata, BOOL *stop))block;
+                            (void (^)(NSString *collection, NSString *key, id object, id metadata, BOOL *stop))block;
 /**
  * Skips the enumeration process, and just gives you the count of matching rows.
 **/
+
 - (BOOL)getNumberOfRows:(NSUInteger *)count matchingQuery:(YapDatabaseQuery *)query;
 
-/**
- * This method assists in performing a query over a subset of rows,
- * where the subset is a known set of keys.
- *
- * For example:
- *
- * Say you have a known set of items, and you want to figure out which of these items fit in the rectangle.
- *
- * NSArray *keys = [self itemKeys];
- * NSArray *rowids = [[[transaction ext:@"idx"] rowidsForKeys:keys inCollection:@"tracks"] allValues];
- *
- * YapDatabaseQuery *query =
- *   [YapDatabaseQuery queryWithFormat:@"WHERE minLon > 0 AND maxLat <= 10 AND rowid IN (?)", rowids];
- **/
-- (NSDictionary<NSString*, NSNumber*> *)rowidsForKeys:(NSArray<NSString *> *)keys
-										 inCollection:(nullable NSString *)collection;
-
 @end
-
-NS_ASSUME_NONNULL_END

@@ -1,9 +1,6 @@
 #import <Foundation/Foundation.h>
 
 @class YapDatabaseConnection;
-@class YapDatabaseExtensionTransaction;
-
-NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Welcome to YapDatabase!
@@ -52,6 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
  * A transaction allows you to safely access the database as needed in a thread-safe and optimized manner.
 **/
 @interface YapDatabaseReadTransaction : NSObject
+NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Transactions are light-weight objects created by connections.
@@ -72,7 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
  * Keep in mind that transactions are short lived objects.
  * Each transaction is a new/different transaction object.
 **/
-@property (nonatomic, strong, readwrite, nullable) id userInfo;
+@property (nullable, nonatomic, strong, readwrite) id userInfo;
 
 #pragma mark Count
 
@@ -101,7 +99,7 @@ NS_ASSUME_NONNULL_BEGIN
  * If the list of collections is really big, it may be more efficient to enumerate them instead.
  * @see enumerateCollectionsUsingBlock:
 **/
-- (NSArray<NSString *> *)allCollections;
+- (NSArray *)allCollections;
 
 /**
  * Returns a list of all keys in the given collection.
@@ -109,7 +107,7 @@ NS_ASSUME_NONNULL_BEGIN
  * If the list of keys is really big, it may be more efficient to enumerate them instead.
  * @see enumerateKeysInCollection:usingBlock:
 **/
-- (NSArray<NSString *> *)allKeysInCollection:(nullable NSString *)collection;
+- (NSArray *)allKeysInCollection:(nullable NSString *)collection;
 
 #pragma mark Object & Metadata
 
@@ -138,7 +136,7 @@ NS_ASSUME_NONNULL_BEGIN
  * Provides access to the metadata.
  * This fetches directly from the metadata dictionary stored in memory, and thus never hits the disk.
 **/
-- (nullable id)metadataForKey:(NSString *)key inCollection:(nullable NSString *)collection;
+- (id)metadataForKey:(NSString *)key inCollection:(nullable NSString *)collection;
 
 #pragma mark Primitive
 
@@ -151,7 +149,7 @@ NS_ASSUME_NONNULL_BEGIN
  * 
  * @see objectForKey:inCollection:
 **/
-- (nullable NSData *)serializedObjectForKey:(NSString *)key inCollection:(nullable NSString *)collection;
+- (NSData *)serializedObjectForKey:(NSString *)key inCollection:(nullable NSString *)collection;
 
 /**
  * Primitive access.
@@ -162,7 +160,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @see metadataForKey:inCollection:
 **/
-- (nullable NSData *)serializedMetadataForKey:(NSString *)key inCollection:(nullable NSString *)collection;
+- (NSData *)serializedMetadataForKey:(NSString *)key inCollection:(nullable NSString *)collection;
 
 /**
  * Primitive access.
@@ -391,9 +389,9 @@ NS_ASSUME_NONNULL_BEGIN
  * IMPORTANT:
  * Due to cache optimizations, the items may not be enumerated in the same order as the 'keys' parameter.
 **/
-- (void)enumerateObjectsForKeys:(NSArray<NSString *> *)keys
+- (void)enumerateObjectsForKeys:(NSArray *)keys
                    inCollection:(nullable NSString *)collection
-            unorderedUsingBlock:(void (^)(NSUInteger keyIndex, id __nullable object, BOOL *stop))block;
+            unorderedUsingBlock:(void (^)(NSUInteger keyIndex, id object, BOOL *stop))block;
 
 /**
  * Enumerates over the given list of keys (unordered).
@@ -407,7 +405,7 @@ NS_ASSUME_NONNULL_BEGIN
  * IMPORTANT:
  * Due to cache optimizations, the items may not be enumerated in the same order as the 'keys' parameter.
 **/
-- (void)enumerateMetadataForKeys:(NSArray<NSString *> *)keys
+- (void)enumerateMetadataForKeys:(NSArray *)keys
                     inCollection:(nullable NSString *)collection
              unorderedUsingBlock:(void (^)(NSUInteger keyIndex, __nullable id metadata, BOOL *stop))block;
 
@@ -423,7 +421,7 @@ NS_ASSUME_NONNULL_BEGIN
  * IMPORTANT:
  * Due to cache optimizations, the items may not be enumerated in the same order as the 'keys' parameter.
 **/
-- (void)enumerateRowsForKeys:(NSArray<NSString *> *)keys
+- (void)enumerateRowsForKeys:(NSArray *)keys
                 inCollection:(nullable NSString *)collection
          unorderedUsingBlock:(void (^)(NSUInteger keyIndex, __nullable id object, __nullable id metadata, BOOL *stop))block;
 
@@ -444,8 +442,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @see [YapDatabase registerExtension:withName:]
 **/
-- (nullable __kindof YapDatabaseExtensionTransaction *)extension:(NSString *)extensionName;
-- (nullable __kindof YapDatabaseExtensionTransaction *)ext:(NSString *)extensionName; // <-- Shorthand (same as extension: method)
+- (id)extension:(NSString *)extensionName;
+- (id)ext:(NSString *)extensionName; // <-- Shorthand (same as extension: method)
 
 NS_ASSUME_NONNULL_END
 @end
@@ -483,7 +481,7 @@ NS_ASSUME_NONNULL_BEGIN
  * For more information, and code samples, please see the wiki article:
  * https://github.com/yapstudios/YapDatabase/wiki/YapDatabaseModifiedNotification
 **/
-@property (nonatomic, strong, readwrite, nullable) id yapDatabaseModifiedNotificationCustomObject;
+@property (nonatomic, strong, readwrite) id yapDatabaseModifiedNotificationCustomObject;
 
 #pragma mark Object & Metadata
 
@@ -770,7 +768,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Deletes the database rows with the given keys in the given collection.
 **/
-- (void)removeObjectsForKeys:(NSArray<NSString *> *)keys inCollection:(nullable NSString *)collection;
+- (void)removeObjectsForKeys:(NSArray *)keys inCollection:(nullable NSString *)collection;
 
 /**
  * Deletes every key/object pair from the given collection.
@@ -783,6 +781,5 @@ NS_ASSUME_NONNULL_BEGIN
 **/
 - (void)removeAllObjectsInAllCollections;
 
-@end
-
 NS_ASSUME_NONNULL_END
+@end

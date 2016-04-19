@@ -3,9 +3,5 @@ platform :ios, '8.0'
 # Uncomment this line if you're using Swift
 use_frameworks!
 
-target 'YapPracticeProject' do
-
-pod 'YapDatabase', '~> 2.6'
-
-end
+pod 'YapDatabase', '= 2.7.2'
 

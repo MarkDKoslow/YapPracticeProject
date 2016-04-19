@@ -18,6 +18,9 @@
 
 #import "YapDatabaseExtensionPrivate.h"
 #import "YapCache.h"
+#if DEBUG
+#import "YapDebugDictionary.h"
+#endif
 
 #import "sqlite3.h"
 
@@ -33,20 +36,6 @@ static NSString *const changeset_key_deletedHashes    = @"deletedHashes";    // 
 static NSString *const changeset_key_mappingTableInfo = @"mappingTableInfo"; // Dict : rowid -> CleanMappingTableInfo
 static NSString *const changeset_key_recordTableInfo  = @"recordTableInfo";  // Dict : string -> CleanRecordTableInfo
 static NSString *const changeset_key_reset            = @"reset";
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma mark -
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-@interface YapDatabaseCloudKitRecordHandler () {
-@public
-	
-	YapDatabaseCloudKitRecordBlock block;
-	YapDatabaseBlockType           blockType;
-	YapDatabaseBlockInvoke         blockInvokeOptions;
-}
-
-@end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark -
@@ -79,7 +68,8 @@ static NSString *const changeset_key_reset            = @"reset";
 @interface YapDatabaseCloudKit () {
 @public
 	
-	YapDatabaseCloudKitRecordHandler *recordHandler;
+	YapDatabaseCloudKitRecordBlock recordBlock;
+	YapDatabaseCloudKitBlockType recordBlockType;
 	
 	YapDatabaseCloudKitMergeBlock mergeBlock;
 	YapDatabaseCloudKitOperationErrorBlock opErrorBlock;
@@ -115,13 +105,13 @@ static NSString *const changeset_key_reset            = @"reset";
 	__strong YapDatabaseCloudKit *parent;
 	__unsafe_unretained YapDatabaseConnection *databaseConnection;
 	
-	YapCache<NSNumber *, id> *cleanMappingTableInfoCache; // rowid -> {[ NSString, NSNull ]}
-	YapCache<NSString *, id> *cleanRecordTableInfoCache;  // hash  -> {[ YDBCKCleanRecordTableInfo, NSNull ]}
+	YapCache *cleanMappingTableInfoCache;
+	YapCache *cleanRecordTableInfoCache;
 	
-	NSMutableDictionary<NSNumber *, YDBCKDirtyMappingTableInfo *> *dirtyMappingTableInfoDict;
-	NSMutableDictionary<NSString *, YDBCKDirtyRecordTableInfo *> *dirtyRecordTableInfoDict;
+	NSMutableDictionary *dirtyMappingTableInfoDict;
+	NSMutableDictionary *dirtyRecordTableInfoDict;
 	
-	YapCache<NSString *, NSArray *> *recordKeysCache;
+	YapCache *recordKeysCache;
 	
 	BOOL reset;
 	BOOL isOperationCompletionTransaction;
@@ -212,7 +202,11 @@ static NSString *const changeset_key_reset            = @"reset";
 	
 	NSMutableArray *deletedRecordIDs;
 	
-	NSMutableDictionary<CKRecordID *, YDBCKChangeRecord *> *modifiedRecords;
+#if DEBUG
+	YapDebugDictionary *modifiedRecords;
+#else
+	NSMutableDictionary *modifiedRecords;
+#endif
 }
 
 - (instancetype)initWithUUID:(NSString *)uuid

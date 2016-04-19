@@ -5,8 +5,6 @@
 #import "YapDatabaseFullTextSearchConnection.h"
 #import "YapDatabaseFullTextSearchTransaction.h"
 
-NS_ASSUME_NONNULL_BEGIN
-
 /**
  * Welcome to YapDatabase!
  *
@@ -20,17 +18,17 @@ NS_ASSUME_NONNULL_BEGIN
 **/
 @interface YapDatabaseFullTextSearch : YapDatabaseExtension
 
-- (id)initWithColumnNames:(NSArray<NSString *> *)columnNames
+- (id)initWithColumnNames:(NSArray *)columnNames
                   handler:(YapDatabaseFullTextSearchHandler *)handler;
 
-- (id)initWithColumnNames:(NSArray<NSString *> *)columnNames
+- (id)initWithColumnNames:(NSArray *)columnNames
                     handler:(YapDatabaseFullTextSearchHandler *)handler
-               versionTag:(nullable NSString *)versionTag;
+               versionTag:(NSString *)versionTag;
 
-- (id)initWithColumnNames:(NSArray<NSString *> *)columnNames
-                  options:(nullable NSDictionary *)options
+- (id)initWithColumnNames:(NSArray *)columnNames
+                  options:(NSDictionary *)options
                   handler:(YapDatabaseFullTextSearchHandler *)handler
-               versionTag:(nullable NSString *)versionTag;
+               versionTag:(NSString *)versionTag;
 
 
 /* Inherited from YapDatabaseExtension
@@ -39,7 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
  
 */
 
-@property (nonatomic, strong, readonly) YapDatabaseFullTextSearchHandler *handler;
+@property (nonatomic, strong, readonly) YapDatabaseFullTextSearchBlock block;
+@property (nonatomic, assign, readonly) YapDatabaseFullTextSearchBlockType blockType;
 
 /**
  * The versionTag assists in making changes to the extension.
@@ -48,8 +47,6 @@ NS_ASSUME_NONNULL_BEGIN
  * then simply pass a different versionTag during the init method,
  * and the FTS extension will automatically update itself.
 **/
-@property (nonatomic, copy, readonly, nullable) NSString *versionTag;
+@property (nonatomic, copy, readonly) NSString *versionTag;
 
 @end
-
-NS_ASSUME_NONNULL_END

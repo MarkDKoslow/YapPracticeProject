@@ -31,7 +31,7 @@
 {
 	if ((self = [super init]))
 	{
-		// Nothing to do here...
+		// Nothing to do here
 	}
 	return self;
 }
@@ -60,13 +60,38 @@
 
 @synthesize allowedCollections = allowedCollections;
 
-@synthesize willModifyRow = willModifyRow;
-@synthesize didModifyRow = didModifyRow;
+@synthesize willInsertObject = willInsertObject;
+@synthesize didInsertObject = didInsertObject;
 
-@synthesize willRemoveRow = willRemoveRow;
-@synthesize didRemoveRow = didRemoveRow;
+@synthesize willUpdateObject = willUpdateObject;
+@synthesize didUpdateObject = didUpdateObject;
 
-@synthesize willRemoveAllRows = willRemoveAllRows;
-@synthesize didRemoveAllRows = didRemoveAllRows;
+@synthesize willReplaceObject = willReplaceObject;
+@synthesize didReplaceObject = didReplaceObject;
+
+@synthesize willReplaceMetadata = willReplaceMetadata;
+@synthesize didReplaceMetadata = didReplaceMetadata;
+
+@synthesize willRemoveObject = willRemoveObject;
+@synthesize didRemoveObject = didRemoveObject;
+
+@synthesize willRemoveObjects = willRemoveObjects;
+@synthesize didRemoveObjects = didRemoveObjects;
+
+@synthesize willRemoveAllObjectsInAllCollections = willRemoveAllObjectsInAllCollections;
+@synthesize didRemoveAllObjectsInAllCollections = didRemoveAllObjectsInAllCollections;
+
+- (void)willChangeValueForKey:(NSString *)key
+{
+	if (self.registeredName)
+	{
+		NSString *reason =
+		  @"YapDatabaseHooks properties cannot be changed after the extension has been registered.";
+		
+		@throw [NSException exceptionWithName:@"YapDatabaseHooks" reason:reason userInfo:nil];
+	}
+	
+	[super willChangeValueForKey:key];
+}
 
 @end

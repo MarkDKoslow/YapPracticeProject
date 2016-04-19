@@ -136,9 +136,6 @@
 
 */
 
-@property (nonatomic, copy, readonly) YapDatabaseRTreeIndexSetup *setup;
-@property (nonatomic, strong, readonly) YapDatabaseRTreeIndexHandler *handler;
-
 /**
  * The versionTag assists in making changes to the extension.
  *

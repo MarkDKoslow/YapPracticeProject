@@ -7,8 +7,6 @@
 #import "YapDatabaseConnection.h"
 #import "YapDatabaseTransaction.h"
 
-#import "YapMutationStack.h"
-
 #import "sqlite3.h"
 
 /**
@@ -22,24 +20,11 @@
 #pragma mark -
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-@interface YapDatabaseFullTextSearchHandler () {
-@public
-	
-	YapDatabaseFullTextSearchBlock block;
-	YapDatabaseBlockType           blockType;
-	YapDatabaseBlockInvoke         blockInvokeOptions;
-}
-
-@end
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma mark -
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 @interface YapDatabaseFullTextSearch () {
 @public
 	
-	YapDatabaseFullTextSearchHandler *handler;
+	YapDatabaseFullTextSearchBlock block;
+	YapDatabaseFullTextSearchBlockType blockType;
 	
 	NSOrderedSet *columnNames;
 	NSDictionary *options;
@@ -59,18 +44,14 @@
 @interface YapDatabaseFullTextSearchConnection () {
 @public
 	
-	__strong YapDatabaseFullTextSearch *parent;
+	__strong YapDatabaseFullTextSearch *fts;
 	__unsafe_unretained YapDatabaseConnection *databaseConnection;
 	
 	NSMutableDictionary *blockDict;
-	
-	YapMutationStack_Bool *mutationStack;
 }
 
-- (id)initWithParent:(YapDatabaseFullTextSearch *)parent databaseConnection:(YapDatabaseConnection *)databaseConnection;
-
-- (void)postCommitCleanup;
-- (void)postRollbackCleanup;
+- (id)initWithFTS:(YapDatabaseFullTextSearch *)fts
+   databaseConnection:(YapDatabaseConnection *)databaseConnection;
 
 - (sqlite3_stmt *)insertRowidStatement;
 - (sqlite3_stmt *)setRowidStatement;
@@ -90,12 +71,14 @@
 @interface YapDatabaseFullTextSearchTransaction () {
 @private
 	
-	__unsafe_unretained YapDatabaseFullTextSearchConnection *parentConnection;
+	__unsafe_unretained YapDatabaseFullTextSearchConnection *ftsConnection;
 	__unsafe_unretained YapDatabaseReadTransaction *databaseTransaction;
+	
+	BOOL isMutated;
 }
 
-- (id)initWithParentConnection:(YapDatabaseFullTextSearchConnection *)parentConnection
-           databaseTransaction:(YapDatabaseReadTransaction *)databaseTransaction;
+- (id)initWithFTSConnection:(YapDatabaseFullTextSearchConnection *)ftsConnection
+        databaseTransaction:(YapDatabaseReadTransaction *)databaseTransaction;
 
 - (void)enumerateRowidsMatching:(NSString *)query
                      usingBlock:(void (^)(int64_t rowid, BOOL *stop))block;

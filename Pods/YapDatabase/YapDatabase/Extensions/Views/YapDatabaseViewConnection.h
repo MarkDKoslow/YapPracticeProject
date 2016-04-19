@@ -6,8 +6,6 @@
 
 @class YapDatabaseView;
 
-NS_ASSUME_NONNULL_BEGIN
-
 /**
  * Welcome to YapDatabase!
  *
@@ -128,25 +126,25 @@ NS_ASSUME_NONNULL_BEGIN
  *    [self.tableView endUpdates];
  * }
 **/
-- (void)getSectionChanges:(NSArray<YapDatabaseViewSectionChange *> * _Nonnull * _Nullable)sectionChangesPtr
-               rowChanges:(NSArray<YapDatabaseViewRowChange *> * _Nonnull * _Nullable)rowChangesPtr
-         forNotifications:(NSArray<NSNotification *> *)notifications
+- (void)getSectionChanges:(NSArray **)sectionChangesPtr
+               rowChanges:(NSArray **)rowChangesPtr
+         forNotifications:(NSArray *)notifications
              withMappings:(YapDatabaseViewMappings *)mappings;
 
 /**
  * A simple YES/NO query to see if the view changed at all, inclusive of all groups.
 **/
-- (BOOL)hasChangesForNotifications:(NSArray<NSNotification *> *)notifications;
+- (BOOL)hasChangesForNotifications:(NSArray *)notifications;
 
 /**
  * A simple YES/NO query to see if a particular group within the view changed at all.
 **/
-- (BOOL)hasChangesForGroup:(NSString *)group inNotifications:(NSArray<NSNotification *> *)notifications;
+- (BOOL)hasChangesForGroup:(NSString *)group inNotifications:(NSArray *)notifications;
 
 /**
  * A simple YES/NO query to see if any of the given groups within the view changed at all.
 **/
-- (BOOL)hasChangesForAnyGroups:(NSSet<NSString *> *)groups inNotifications:(NSArray<NSNotification *> *)notifications;
+- (BOOL)hasChangesForAnyGroups:(NSSet *)groups inNotifications:(NSArray *)notifications;
 
 /**
  * This method provides a rough estimate of the size of the change-set.
@@ -211,8 +209,6 @@ NS_ASSUME_NONNULL_BEGIN
  *     // Normal animation code goes here....
  * }
 **/
-- (NSUInteger)numberOfRawChangesForNotifications:(NSArray<NSNotification *> *)notifications;
+- (NSUInteger)numberOfRawChangesForNotifications:(NSArray *)notifications;
 
 @end
-
-NS_ASSUME_NONNULL_END

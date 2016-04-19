@@ -1,6 +1,5 @@
 #import <Foundation/Foundation.h>
 
-NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Range offsets are specified from either the beginning or end.
@@ -80,9 +79,9 @@ typedef NS_OPTIONS(NSUInteger, YapDatabaseViewGrowOptions) {
  *   Thus you get row animations for free, even when only displaying a subset.
  *   And all the math is already done for you.
 **/
-+ (nullable YapDatabaseViewRangeOptions *)fixedRangeWithLength:(NSUInteger)length
-														offset:(NSUInteger)offset
-														  from:(YapDatabaseViewPin)beginningOrEnd;
++ (YapDatabaseViewRangeOptions *)fixedRangeWithLength:(NSUInteger)length
+                                               offset:(NSUInteger)offset
+                                                 from:(YapDatabaseViewPin)beginningOrEnd;
 
 /**
  * There are 2 types of supported ranges: Fixed & Flexible
@@ -129,9 +128,9 @@ typedef NS_OPTIONS(NSUInteger, YapDatabaseViewGrowOptions) {
  *   Thus you get row animations for free, even when only displaying a subset.
  *   And all the math is already done for you.
 **/
-+ (nullable YapDatabaseViewRangeOptions *)flexibleRangeWithLength:(NSUInteger)length
-														   offset:(NSUInteger)offset
-															 from:(YapDatabaseViewPin)beginningOrEnd;
++ (YapDatabaseViewRangeOptions *)flexibleRangeWithLength:(NSUInteger)length
+                                                  offset:(NSUInteger)offset
+                                                    from:(YapDatabaseViewPin)beginningOrEnd;
 
 /**
  * The current length of the range.
@@ -327,5 +326,3 @@ typedef NS_OPTIONS(NSUInteger, YapDatabaseViewGrowOptions) {
 - (id)copyWithNewLength:(NSUInteger)newLength newOffset:(NSUInteger)newOffset;
 
 @end
-
-NS_ASSUME_NONNULL_END

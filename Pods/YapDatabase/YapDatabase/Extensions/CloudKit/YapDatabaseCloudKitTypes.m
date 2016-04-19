@@ -1,81 +1,52 @@
 #import "YapDatabaseCloudKitTypes.h"
-#import "YapDatabaseCloudKitPrivate.h" // Required for public/package ivars
+#import "YapDatabaseCloudKitPrivate.h"
 
 
 @implementation YapDatabaseCloudKitRecordHandler
 
-@synthesize block = block;
-@synthesize blockType = blockType;
-@synthesize blockInvokeOptions = blockInvokeOptions;
+@synthesize recordBlock = recordBlock;
+@synthesize recordBlockType = recordBlockType;
 
-+ (instancetype)withKeyBlock:(YapDatabaseCloudKitRecordWithKeyBlock)block
++ (instancetype)withKeyBlock:(YapDatabaseCloudKitRecordWithKeyBlock)recordBlock
 {
-	YapDatabaseBlockInvoke ops = YapDatabaseBlockInvokeDefaultForBlockTypeWithKey;
-	return [self withOptions:ops keyBlock:block];
-}
-
-+ (instancetype)withObjectBlock:(YapDatabaseCloudKitRecordWithObjectBlock)block
-{
-	YapDatabaseBlockInvoke ops = YapDatabaseBlockInvokeDefaultForBlockTypeWithObject;
-	return [self withOptions:ops objectBlock:block];
-}
-
-+ (instancetype)withMetadataBlock:(YapDatabaseCloudKitRecordWithMetadataBlock)block
-{
-	YapDatabaseBlockInvoke ops = YapDatabaseBlockInvokeDefaultForBlockTypeWithMetadata;
-	return [self withOptions:ops metadataBlock:block];
-}
-
-+ (instancetype)withRowBlock:(YapDatabaseCloudKitRecordWithRowBlock)block
-{
-	YapDatabaseBlockInvoke ops = YapDatabaseBlockInvokeDefaultForBlockTypeWithRow;
-	return [self withOptions:ops rowBlock:block];
-}
-
-+ (instancetype)withOptions:(YapDatabaseBlockInvoke)ops keyBlock:(YapDatabaseCloudKitRecordWithKeyBlock)block
-{
-	if (block == nil) return nil;
+	if (recordBlock == nil) return nil;
 	
 	YapDatabaseCloudKitRecordHandler *handler = [[YapDatabaseCloudKitRecordHandler alloc] init];
-	handler->block = block;
-	handler->blockType = YapDatabaseBlockTypeWithKey;
-	handler->blockInvokeOptions = ops;
+	handler->recordBlock = recordBlock;
+	handler->recordBlockType = YapDatabaseCloudKitBlockTypeWithKey;
 	
 	return handler;
 }
 
-+ (instancetype)withOptions:(YapDatabaseBlockInvoke)ops objectBlock:(YapDatabaseCloudKitRecordWithObjectBlock)block
++ (instancetype)withObjectBlock:(YapDatabaseCloudKitRecordWithObjectBlock)recordBlock
 {
-	if (block == nil) return nil;
+	if (recordBlock == nil) return nil;
 	
 	YapDatabaseCloudKitRecordHandler *handler = [[YapDatabaseCloudKitRecordHandler alloc] init];
-	handler->block = block;
-	handler->blockType = YapDatabaseBlockTypeWithObject;
-	handler->blockInvokeOptions = ops;
+	handler->recordBlock = recordBlock;
+	handler->recordBlockType = YapDatabaseCloudKitBlockTypeWithObject;
 	
 	return handler;
 }
 
-+ (instancetype)withOptions:(YapDatabaseBlockInvoke)ops metadataBlock:(YapDatabaseCloudKitRecordWithMetadataBlock)block
++ (instancetype)withMetadataBlock:(YapDatabaseCloudKitRecordWithMetadataBlock)recordBlock
 {
-	if (block == nil) return nil;
+	if (recordBlock == nil) return nil;
 	
 	YapDatabaseCloudKitRecordHandler *handler = [[YapDatabaseCloudKitRecordHandler alloc] init];
-	handler->block = block;
-	handler->blockType = YapDatabaseBlockTypeWithMetadata;
-	handler->blockInvokeOptions = ops;
+	handler->recordBlock = recordBlock;
+	handler->recordBlockType = YapDatabaseCloudKitBlockTypeWithMetadata;
 	
 	return handler;
 }
 
-+ (instancetype)withOptions:(YapDatabaseBlockInvoke)ops rowBlock:(YapDatabaseCloudKitRecordWithRowBlock)block
++ (instancetype)withRowBlock:(YapDatabaseCloudKitRecordWithRowBlock)recordBlock
 {
-	if (block == nil) return nil;
+	if (recordBlock == nil) return nil;
 	
 	YapDatabaseCloudKitRecordHandler *handler = [[YapDatabaseCloudKitRecordHandler alloc] init];
-	handler->block = block;
-	handler->blockType = YapDatabaseBlockTypeWithRow;
-	handler->blockInvokeOptions = ops;
+	handler->recordBlock = recordBlock;
+	handler->recordBlockType = YapDatabaseCloudKitBlockTypeWithRow;
 	
 	return handler;
 }

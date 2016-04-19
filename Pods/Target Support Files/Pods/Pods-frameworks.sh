@@ -84,10 +84,10 @@ strip_invalid_archs() {
 
 
 if [[ "$CONFIGURATION" == "Debug" ]]; then
-  install_framework "Pods-YapPracticeProject/CocoaLumberjack.framework"
-  install_framework "Pods-YapPracticeProject/YapDatabase.framework"
+  install_framework "Pods/CocoaLumberjack.framework"
+  install_framework "Pods/YapDatabase.framework"
 fi
 if [[ "$CONFIGURATION" == "Release" ]]; then
-  install_framework "Pods-YapPracticeProject/CocoaLumberjack.framework"
-  install_framework "Pods-YapPracticeProject/YapDatabase.framework"
+  install_framework "Pods/CocoaLumberjack.framework"
+  install_framework "Pods/YapDatabase.framework"
 fi

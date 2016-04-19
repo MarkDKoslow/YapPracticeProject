@@ -1,8 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "YapCollectionKey.h"
 
-NS_ASSUME_NONNULL_BEGIN
-
 typedef NS_ENUM(NSInteger, YapDatabaseViewChangeType) {
 	YapDatabaseViewChangeInsert = 1,
 	YapDatabaseViewChangeDelete = 2,
@@ -16,6 +14,7 @@ typedef NS_OPTIONS(NSUInteger, YapDatabaseViewChangesBitMask) {
 	YapDatabaseViewChangedDependency = 1 << 2, // 0100  (used by YapDatabaseViewMappings)
 	YapDatabaseViewChangedSnippets   = 1 << 3, // 1000  (used by YapDatabaseSearchResultsView)
 };
+
 
 /**
  * YapDatabaseViewChange is designed to help facilitate animations to tableViews and collectionsViews.
@@ -318,5 +317,3 @@ typedef NS_OPTIONS(NSUInteger, YapDatabaseViewChangesBitMask) {
 @property (nonatomic, readonly) YapCollectionKey *collectionKey;
 
 @end
-
-NS_ASSUME_NONNULL_END

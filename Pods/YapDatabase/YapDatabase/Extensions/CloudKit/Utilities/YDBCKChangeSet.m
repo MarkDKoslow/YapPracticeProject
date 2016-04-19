@@ -2,6 +2,9 @@
 #import "YDBCKChangeRecord.h"
 #import "YDBCKRecord.h"
 #import "YapDatabaseCloudKitPrivate.h"
+#if DEBUG
+#import "YapDebugDictionary.h"
+#endif
 
 
 @implementation YDBCKChangeSet
@@ -77,7 +80,11 @@ databaseIdentifier:(NSString *)inDatabaseIdentifier
 	
 	if (modifiedRecords)
 	{
+	#if DEBUG
+		fullCopy->modifiedRecords = [[YapDebugDictionary alloc] initWithDictionary:modifiedRecords copyItems:YES];
+	#else
 		fullCopy->modifiedRecords = [[NSMutableDictionary alloc] initWithDictionary:modifiedRecords copyItems:YES];
+	#endif
 	}
 	
 	return fullCopy;
@@ -201,7 +208,13 @@ databaseIdentifier:(NSString *)inDatabaseIdentifier
 		NSAssert([modifiedRecordsArray isKindOfClass:[NSArray class]], @"Deserialized object is wrong class");
 	}
 	
+#if DEBUG
+	modifiedRecords = [[YapDebugDictionary alloc] initWithKeyClass:[CKRecordID class]
+	                                                   objectClass:[YDBCKChangeRecord class]
+	                                                      capacity:[modifiedRecordsArray count]];
+#else
 	modifiedRecords = [[NSMutableDictionary alloc] initWithCapacity:[modifiedRecordsArray count]];
+#endif
 	
 	for (YDBCKChangeRecord *changeRecord in modifiedRecordsArray)
 	{

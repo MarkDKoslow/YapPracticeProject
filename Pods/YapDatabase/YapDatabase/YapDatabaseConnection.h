@@ -4,9 +4,6 @@
 @class YapDatabase;
 @class YapDatabaseReadTransaction;
 @class YapDatabaseReadWriteTransaction;
-@class YapDatabaseExtensionConnection;
-
-NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Welcome to YapDatabase!
@@ -80,6 +77,7 @@ typedef NS_OPTIONS(NSUInteger, YapDatabaseConnectionFlushMemoryFlags) {
 
 
 @interface YapDatabaseConnection : NSObject
+NS_ASSUME_NONNULL_BEGIN
 
 /**
  * A database connection maintains a strong reference to its parent.
@@ -402,8 +400,8 @@ typedef NS_OPTIONS(NSUInteger, YapDatabaseConnectionFlushMemoryFlags) {
  * For a complete discussion, please see the wiki page:
  * https://github.com/yapstudios/YapDatabase/wiki/LongLivedReadTransactions
 **/
-- (NSArray<NSNotification *> *)beginLongLivedReadTransaction;
-- (NSArray<NSNotification *> *)endLongLivedReadTransaction;
+- (NSArray *)beginLongLivedReadTransaction;
+- (NSArray *)endLongLivedReadTransaction;
 
 - (BOOL)isInLongLivedReadTransaction;
 
@@ -443,37 +441,37 @@ typedef NS_OPTIONS(NSUInteger, YapDatabaseConnectionFlushMemoryFlags) {
 
 // Query for any change to a collection
 
-- (BOOL)hasChangeForCollection:(NSString *)collection inNotifications:(NSArray<NSNotification *> *)notifications;
-- (BOOL)hasObjectChangeForCollection:(NSString *)collection inNotifications:(NSArray<NSNotification *> *)notifications;
-- (BOOL)hasMetadataChangeForCollection:(NSString *)collection inNotifications:(NSArray<NSNotification *> *)notifications;
+- (BOOL)hasChangeForCollection:(NSString *)collection inNotifications:(NSArray *)notifications;
+- (BOOL)hasObjectChangeForCollection:(NSString *)collection inNotifications:(NSArray *)notifications;
+- (BOOL)hasMetadataChangeForCollection:(NSString *)collection inNotifications:(NSArray *)notifications;
 
 // Query for a change to a particular key/collection tuple
 
 - (BOOL)hasChangeForKey:(NSString *)key
            inCollection:(NSString *)collection
-        inNotifications:(NSArray<NSNotification *> *)notifications;
+        inNotifications:(NSArray *)notifications;
 
 - (BOOL)hasObjectChangeForKey:(NSString *)key
                  inCollection:(NSString *)collection
-              inNotifications:(NSArray<NSNotification *> *)notifications;
+              inNotifications:(NSArray *)notifications;
 
 - (BOOL)hasMetadataChangeForKey:(NSString *)key
                    inCollection:(NSString *)collection
-                inNotifications:(NSArray<NSNotification *> *)notifications;
+                inNotifications:(NSArray *)notifications;
 
 // Query for a change to a particular set of keys in a collection
 
 - (BOOL)hasChangeForAnyKeys:(NSSet *)keys
                inCollection:(NSString *)collection
-            inNotifications:(NSArray<NSNotification *> *)notifications;
+            inNotifications:(NSArray *)notifications;
 
 - (BOOL)hasObjectChangeForAnyKeys:(NSSet *)keys
                      inCollection:(NSString *)collection
-                  inNotifications:(NSArray<NSNotification *> *)notifications;
+                  inNotifications:(NSArray *)notifications;
 
 - (BOOL)hasMetadataChangeForAnyKeys:(NSSet *)keys
                        inCollection:(NSString *)collection
-                    inNotifications:(NSArray<NSNotification *> *)notifications;
+                    inNotifications:(NSArray *)notifications;
 
 // Advanced query techniques
 
@@ -488,7 +486,7 @@ typedef NS_OPTIONS(NSUInteger, YapDatabaseConnectionFlushMemoryFlags) {
  * This method is designed to be used in conjunction with the enumerateChangedKeys.... methods (below).
  * The hasChange... methods (above) already take this into account.
 **/
-- (BOOL)didClearCollection:(NSString *)collection inNotifications:(NSArray<NSNotification *> *)notifications;
+- (BOOL)didClearCollection:(NSString *)collection inNotifications:(NSArray *)notifications;
 
 /**
  * Returns YES if [transaction removeAllObjectsInAllCollections] was invoked
@@ -500,7 +498,7 @@ typedef NS_OPTIONS(NSUInteger, YapDatabaseConnectionFlushMemoryFlags) {
  * This method is designed to be used in conjunction with the enumerateChangedKeys.... methods (below).
  * The hasChange... methods (above) already take this into account.
 **/
-- (BOOL)didClearAllCollectionsInNotifications:(NSArray<NSNotification *> *)notifications;
+- (BOOL)didClearAllCollectionsInNotifications:(NSArray *)notifications;
 
 /**
  * Allows you to enumerate all the changed keys in the given collection, for the given commits.
@@ -509,30 +507,25 @@ typedef NS_OPTIONS(NSUInteger, YapDatabaseConnectionFlushMemoryFlags) {
  * or [transaction removeAllObjectsInAllCollections] was invoked
  * during any of the commits represented by the given notifications,
  * then the key may not be included in the enumeration.
- * You must use didClearCollection:inNotifications: or didClearAllCollectionsInNotifications:
- * if you need to handle that case.
+ * You must use didClearCollection:inNotifications: if you need to handle that case.
  * 
  * @see didClearCollection:inNotifications:
- * @see didClearAllCollectionsInNotifications:
 **/
 - (void)enumerateChangedKeysInCollection:(NSString *)collection
-                         inNotifications:(NSArray<NSNotification *> *)notifications
+                         inNotifications:(NSArray *)notifications
                               usingBlock:(void (^)(NSString *key, BOOL *stop))block;
 
 /**
  * Allows you to enumerate all the changed collection/key tuples for the given commits.
  * 
- * Keep in mind that if [transaction removeAllObjectsInCollection:] was invoked on the given collection
- * or [transaction removeAllObjectsInAllCollections] was invoked
+ * Keep in mind that if [transaction removeAllObjectsInAllCollections] was invoked
  * during any of the commits represented by the given notifications,
  * then the collection/key tuple may not be included in the enumeration.
- * You must use didClearCollection:inNotifications: or didClearAllCollectionsInNotifications:
- * if you need to handle that case.
+ * You must use didClearAllCollectionsInNotifications: if you need to handle that case.
  * 
- * @see didClearCollection:inNotifications:
  * @see didClearAllCollectionsInNotifications:
 **/
-- (void)enumerateChangedCollectionKeysInNotifications:(NSArray<NSNotification *> *)notifications
+- (void)enumerateChangedCollectionKeysInNotifications:(NSArray *)notifications
                                            usingBlock:(void (^)(YapCollectionKey *ck, BOOL *stop))block;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -552,8 +545,8 @@ typedef NS_OPTIONS(NSUInteger, YapDatabaseConnectionFlushMemoryFlags) {
  * 
  * @see YapDatabase registerExtension:withName:
 **/
-- (__kindof YapDatabaseExtensionConnection *)extension:(NSString *)extensionName;
-- (__kindof YapDatabaseExtensionConnection *)ext:(NSString *)extensionName; // <-- Shorthand (same as extension: method)
+- (id)extension:(NSString *)extensionName;
+- (id)ext:(NSString *)extensionName; // <-- Shorthand (same as extension: method)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark Memory
@@ -600,21 +593,16 @@ typedef NS_OPTIONS(NSUInteger, YapDatabaseConnectionFlushMemoryFlags) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Returns the current synchronous configuration via "PRAGMA synchronous;".
- * Allows you to verify that sqlite accepted your synchronous configuration request.
-**/
-- (NSString *)pragmaSynchronous;
-
-/**
  * Returns the current page_size configuration via "PRAGMA page_size;".
- * Allows you to verify that sqlite accepted your page_size configuration request.
+ *
+ * This allows you to see if sqlite accepted your page_size configuration request.
 **/
 - (NSInteger)pragmaPageSize;
 
 /**
- * Returns the currently memory mapped I/O configureation via "PRAGMA mmap_size;".
- * Allows you to verify that sqlite accepted your mmap_size configuration request.
- *
+ * Returns the current memory mapped I/O configuration via "PRAGMA mmap_size;".
+ * 
+ * This allows you to see if sqlite accepted your mmap_size configuration request.
  * Memory mapping may be disabled by sqlite's compile-time options.
  * Or it may restrict the mmap_size to something smaller than requested.
 **/
@@ -786,6 +774,5 @@ typedef NS_OPTIONS(NSUInteger, YapDatabaseConnectionFlushMemoryFlags) {
                   completionQueue:(nullable dispatch_queue_t)completionQueue
                   completionBlock:(nullable void (^)(NSError *))completionBlock;
 
-@end
-
 NS_ASSUME_NONNULL_END
+@end

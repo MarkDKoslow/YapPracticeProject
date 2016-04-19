@@ -1,7 +1,6 @@
 #import <Foundation/Foundation.h>
 #import <CloudKit/CloudKit.h>
 
-NS_ASSUME_NONNULL_BEGIN
 
 /**
  * This utility class is used by the YapDatabaseCloudKitMergeBlock.
@@ -54,12 +53,12 @@ NS_ASSUME_NONNULL_BEGIN
  * See MyDatabaseObject for an example of how you might use KVO to track originalValue(s).
  * See CloudKitTodo sample project for a complete Xcode project example.
 **/
-@property (nonatomic, strong, readonly) NSDictionary<NSString *, id> *originalValues;
+@property (nonatomic, strong, readonly) NSDictionary *originalValues;
 
 /**
  *
 **/
-@property (nonatomic, strong, readonly, nullable) CKRecord *pendingLocalRecord;
+@property (nonatomic, strong, readonly) CKRecord *pendingLocalRecord;
 
 /**
  *
@@ -67,5 +66,3 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) CKRecord *updatedPendingLocalRecord;
 
 @end
-
-NS_ASSUME_NONNULL_END

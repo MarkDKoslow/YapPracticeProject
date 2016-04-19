@@ -5,8 +5,6 @@
 #import "YapDatabaseSearchResultsViewConnection.h"
 #import "YapDatabaseSearchResultsViewTransaction.h"
 
-NS_ASSUME_NONNULL_BEGIN
-
 /**
  * Welcome to YapDatabase!
  *
@@ -52,8 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
 **/
 - (id)initWithFullTextSearchName:(NSString *)fullTextSearchName
                   parentViewName:(NSString *)parentViewName
-                      versionTag:(nullable NSString *)versionTag
-                         options:(nullable YapDatabaseSearchResultsViewOptions *)options;
+                      versionTag:(NSString *)versionTag
+                         options:(YapDatabaseSearchResultsViewOptions *)options;
 
 /**
  * In this configuration, you want to pipe search results directly into a new YapDatabaseView.
@@ -90,8 +88,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)initWithFullTextSearchName:(NSString *)fullTextSearchName
                         grouping:(YapDatabaseViewGrouping *)grouping
                          sorting:(YapDatabaseViewSorting *)sorting
-                      versionTag:(nullable NSString *)versionTag
-                         options:(nullable YapDatabaseSearchResultsViewOptions *)options;
+                      versionTag:(NSString *)versionTag
+                         options:(YapDatabaseSearchResultsViewOptions *)options;
 
 
 @property (nonatomic, strong, readonly) NSString *fullTextSearchName;
@@ -99,5 +97,3 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSString *parentViewName;
 
 @end
-
-NS_ASSUME_NONNULL_END

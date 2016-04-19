@@ -155,7 +155,7 @@
 {
 	if (queryString == nil) return nil;
 	
-	return [self queryWithAggregateFunction:aggregateFunction
+	return [self queryWithAggregateFunction:nil
 	                            queryString:queryString
 	                             parameters:queryParameters
 	                         paramLocations:nil];

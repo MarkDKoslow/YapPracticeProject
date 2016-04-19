@@ -1,7 +1,6 @@
 #import <Foundation/Foundation.h>
 #import <CloudKit/CloudKit.h>
 
-NS_ASSUME_NONNULL_BEGIN
 
 @interface CKRecord (YapDatabaseCloudKit)
 
@@ -13,12 +12,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)sanitizedCopy;
 
 /**
- * There was a bug in early versions of CloudKit:
- *
- * Calling [ckRecord copy] was completely broken.
- * This forced us to use a workaround.
+ * Calling [ckRecord copy] is COMPLETELY BROKEN.
+ * This is a MAJOR BUG in Apple's CloudKit framework (as I see it).
  * 
- * The bug was fixed in iOS 9.
+ * Until this is fixed, we're forced to use this workaround.
 **/
 - (id)safeCopy;
 
@@ -50,5 +47,3 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) CKRecord *record;
 
 @end
-
-NS_ASSUME_NONNULL_END

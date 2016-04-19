@@ -1,7 +1,5 @@
 #import <Foundation/Foundation.h>
 
-NS_ASSUME_NONNULL_BEGIN
-
 /**
  * The YapDatabaseSearchQueue class assists in UI based searches,
  * where the database is tasked in keeping up with the user's typing.
@@ -34,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
  * If the enqueuedQueryCount is positive, then there are queries pending.
  * Otherwise the searchResultsView is processing, or has processed, the most recent query.
 **/
-- (NSArray<NSString *> *)enqueuedQueries;
+- (NSArray *)enqueuedQueries;
 - (NSUInteger)enqueuedQueryCount;
 
 /**
@@ -66,5 +64,3 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)abortSearchInProgressAndRollback:(BOOL)shouldRollback;
 
 @end
-
-NS_ASSUME_NONNULL_END

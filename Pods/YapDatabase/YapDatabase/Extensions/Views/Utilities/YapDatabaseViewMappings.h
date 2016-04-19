@@ -3,8 +3,6 @@
 
 @class YapDatabaseReadTransaction;
 
-NS_ASSUME_NONNULL_BEGIN
-
 /**
  * Welcome to YapDatabase!
  *
@@ -187,7 +185,7 @@ typedef NSComparisonResult (^YapDatabaseViewMappingGroupSort)(NSString *group1, 
  * @param registeredViewName
  *     This is the name of the view, as you registered it with the database system.
 **/
-+ (instancetype)mappingsWithGroups:(NSArray<NSString *> *)allGroups view:(nullable NSString *)registeredViewName;
++ (instancetype)mappingsWithGroups:(NSArray *)allGroups view:(NSString *)registeredViewName;
 
 
 
@@ -202,8 +200,8 @@ typedef NSComparisonResult (^YapDatabaseViewMappingGroupSort)(NSString *group1, 
  * @param registeredViewName
  *     This is the name of the view, as you registered it with the database system.
 **/
-- (id)initWithGroups:(NSArray<NSString *> *)allGroups
-				view:(nullable NSString *)registeredViewName;
+- (id)initWithGroups:(NSArray *)allGroups
+				view:(NSString *)registeredViewName;
 
 
 /**
@@ -218,7 +216,7 @@ typedef NSComparisonResult (^YapDatabaseViewMappingGroupSort)(NSString *group1, 
 **/
 - (id)initWithGroupFilterBlock:(YapDatabaseViewMappingGroupFilter)filterBlock
                      sortBlock:(YapDatabaseViewMappingGroupSort)sortBlock
-                          view:(nullable NSString *)registeredViewName;
+                          view:(NSString *)registeredViewName;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark Accessors
@@ -230,7 +228,7 @@ typedef NSComparisonResult (^YapDatabaseViewMappingGroupSort)(NSString *group1, 
  * 
  * @see visibleGroups
 **/
-@property (nonatomic, copy, readonly) NSArray<NSString *> *allGroups;
+@property (nonatomic, copy, readonly) NSArray *allGroups;
 
 /**
  * The registeredViewName that was passed in the init method.
@@ -341,7 +339,7 @@ typedef NSComparisonResult (^YapDatabaseViewMappingGroupSort)(NSString *group1, 
  * So if you make changes to the rangeOptions, you need to invoke this method again to set the changes.
 **/
 
-- (void)setRangeOptions:(nullable YapDatabaseViewRangeOptions *)rangeOpts forGroup:(NSString *)group;
+- (void)setRangeOptions:(YapDatabaseViewRangeOptions *)rangeOpts forGroup:(NSString *)group;
 - (YapDatabaseViewRangeOptions *)rangeOptionsForGroup:(NSString *)group;
 
 - (void)removeRangeOptionsForGroup:(NSString *)group;
@@ -386,8 +384,8 @@ typedef NSComparisonResult (^YapDatabaseViewMappingGroupSort)(NSString *group1, 
 
 - (void)setCellDrawingDependencyForNeighboringCellWithOffset:(NSInteger)offset forGroup:(NSString *)group;
 
-- (void)setCellDrawingDependencyOffsets:(NSSet<NSNumber *> *)offsets forGroup:(NSString *)group;
-- (NSSet<NSNumber *> *)cellDrawingDependencyOffsetsForGroup:(NSString *)group;
+- (void)setCellDrawingDependencyOffsets:(NSSet *)offsets forGroup:(NSString *)group;
+- (NSSet *)cellDrawingDependencyOffsetsForGroup:(NSString *)group;
 
 /**
  * You can tell mappings to reverse a group/section if you'd like to display it in your tableView/collectionView
@@ -635,7 +633,7 @@ typedef NSComparisonResult (^YapDatabaseViewMappingGroupSort)(NSString *group1, 
  *     // configure and return cell...
  * }
 **/
-- (BOOL)getGroup:(NSString * _Nonnull * _Nullable)groupPtr index:(nullable NSUInteger *)indexPtr forIndexPath:(NSIndexPath *)indexPath;
+- (BOOL)getGroup:(NSString **)groupPtr index:(NSUInteger *)indexPtr forIndexPath:(NSIndexPath *)indexPath;
 
 /**
  * Maps from an indexPath (in the UI) to a group & index (within the View).
@@ -670,8 +668,8 @@ typedef NSComparisonResult (^YapDatabaseViewMappingGroupSort)(NSString *group1, 
  *     // configure and return cell...
  * }
 **/
-- (BOOL)getGroup:(NSString * _Nonnull * _Nullable)groupPtr
-           index:(nullable NSUInteger *)indexPtr
+- (BOOL)getGroup:(NSString **)groupPtr
+           index:(NSUInteger *)indexPtr
           forRow:(NSUInteger)row
        inSection:(NSUInteger)section;
 
@@ -714,8 +712,8 @@ typedef NSComparisonResult (^YapDatabaseViewMappingGroupSort)(NSString *group1, 
  * Returns NO if the given index is NOT visible (or out-of-bounds).
  * Returns NO if the given group is NOT visible (or invalid).
 **/
-- (BOOL)getRow:(nullable NSUInteger *)rowPtr
-       section:(nullable NSUInteger *)sectionPtr
+- (BOOL)getRow:(NSUInteger *)rowPtr
+       section:(NSUInteger *)sectionPtr
       forIndex:(NSUInteger)index
        inGroup:(NSString *)group;
 
@@ -725,7 +723,7 @@ typedef NSComparisonResult (^YapDatabaseViewMappingGroupSort)(NSString *group1, 
  * Returns the indexPath with the proper section and row.
  * Returns nil if the given index & group is NOT visible (or out-of-bounds).
 **/
-- (nullable NSIndexPath *)indexPathForIndex:(NSUInteger)index inGroup:(NSString *)group;
+- (NSIndexPath *)indexPathForIndex:(NSUInteger)index inGroup:(NSString *)group;
 
 /**
  * Maps from an index & group (in the View) to the corresponding row (in the UI).
@@ -867,8 +865,6 @@ typedef NSComparisonResult (^YapDatabaseViewMappingGroupSort)(NSString *group1, 
  *     }
  * }
 **/
-- (nullable NSIndexPath *)nearestIndexPathForRow:(NSUInteger)row inGroup:(NSString *)group;
+- (NSIndexPath *)nearestIndexPathForRow:(NSUInteger)row inGroup:(NSString *)group;
 
 @end
-
-NS_ASSUME_NONNULL_END

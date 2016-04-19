@@ -2,8 +2,6 @@
 
 @class YapDatabaseSecondaryIndexColumn;
 
-NS_ASSUME_NONNULL_BEGIN
-
 /**
  * For detailed information on sqlite datatypes & affinity:
  * https://www.sqlite.org/datatype3.html
@@ -27,9 +25,9 @@ NSString* NSStringFromYapDatabaseSecondaryIndexType(YapDatabaseSecondaryIndexTyp
 - (void)addColumn:(NSString *)name withType:(YapDatabaseSecondaryIndexType)type;
 
 - (NSUInteger)count;
-- (nullable YapDatabaseSecondaryIndexColumn *)columnAtIndex:(NSUInteger)index;
+- (YapDatabaseSecondaryIndexColumn *)columnAtIndex:(NSUInteger)index;
 
-- (NSArray<NSString *> *)columnNames;
+- (NSArray *)columnNames;
 
 @end
 
@@ -41,5 +39,3 @@ NSString* NSStringFromYapDatabaseSecondaryIndexType(YapDatabaseSecondaryIndexTyp
 @property (nonatomic, assign, readonly) YapDatabaseSecondaryIndexType type;
 
 @end
-
-NS_ASSUME_NONNULL_END

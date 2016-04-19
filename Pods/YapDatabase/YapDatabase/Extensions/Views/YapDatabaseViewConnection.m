@@ -35,8 +35,10 @@
  *
  * So we declare it here, as opposed to within YapDatabaseViewPrivate.
 **/
-- (void)getGrouping:(YapDatabaseViewGrouping **)groupingPtr
-            sorting:(YapDatabaseViewSorting **)sortingPtr;
+- (void)getGroupingBlock:(YapDatabaseViewGroupingBlock *)groupingBlockPtr
+       groupingBlockType:(YapDatabaseViewBlockType *)groupingBlockTypePtr
+            sortingBlock:(YapDatabaseViewSortingBlock *)sortingBlockPtr
+        sortingBlockType:(YapDatabaseViewBlockType *)sortingBlockTypePtr;
 
 @end
 
@@ -75,7 +77,7 @@
 		
 		pageCache = [[YapCache alloc] initWithCountLimit:40];
 		pageCache.allowedKeyClasses = [NSSet setWithObject:[NSString class]];
-		pageCache.allowedObjectClasses = [NSSet setWithObject:[YapDatabaseViewPage class]];
+		pageCache.allowedObjectClasses = [NSSet setWithObjects:[YapDatabaseViewPage class], nil];
 		
 		sharedKeySetForInternalChangeset = [NSDictionary sharedKeySetForKeys:[self internalChangesetKeys]];
 		sharedKeySetForExternalChangeset = [NSDictionary sharedKeySetForKeys:[self externalChangesetKeys]];
@@ -241,15 +243,17 @@
 	
 	[changes removeAllObjects];
 	
-	// Don't keep cached configuration in memory.
+	// Don't keep cached blocks in memory.
 	// These are loaded on-demand within readwrite transactions.
-	grouping = nil;
-	sorting = nil;
+	groupingBlock = NULL;
+	groupingBlockType = 0;
+	sortingBlock = NULL;
+	sortingBlockType = 0;
 	
 	versionTag = nil;
 	
-	groupingChanged = NO;
-	sortingChanged = NO;
+	groupingBlockChanged = NO;
+	sortingBlockChanged = NO;
 	versionTagChanged = NO;
 }
 
@@ -284,15 +288,17 @@
 	
 	reset = NO;
 	
-	// Don't keep cached configuration in memory.
-	// These are loaded on-demand within readwrite transactions.
-	grouping = nil;
-	sorting = nil;
+	// Don't keep cached blocks in memory.
+	// These are loaded on-demand withing readwrite transactions.
+	groupingBlock = NULL;
+	groupingBlockType = 0;
+	sortingBlock = NULL;
+	sortingBlockType = 0;
 	
 	versionTag = nil;
 	
-	groupingChanged = NO;
-	sortingChanged = NO;
+	groupingBlockChanged = NO;
+	sortingBlockChanged = NO;
 	versionTagChanged = NO;
 }
 
@@ -302,8 +308,10 @@
 	          changeset_key_dirtyMaps,
 	          changeset_key_dirtyPages,
 	          changeset_key_reset,
-	          changeset_key_grouping,
-	          changeset_key_sorting,
+	          changeset_key_groupingBlock,
+	          changeset_key_groupingBlockType,
+	          changeset_key_sortingBlock,
+	          changeset_key_sortingBlockType,
 	          changeset_key_versionTag ];
 }
 
@@ -348,16 +356,18 @@
 		hasDiskChanges = [self isPersistentView];
 	}
 	
-	if (groupingChanged || sortingChanged || versionTagChanged)
+	if (groupingBlockChanged || sortingBlockChanged || versionTagChanged)
 	{
 		if (internalChangeset == nil)
 			internalChangeset = [NSMutableDictionary dictionaryWithSharedKeySet:sharedKeySetForInternalChangeset];
 		
-		if (groupingChanged) {
-			internalChangeset[changeset_key_grouping] = grouping;
+		if (groupingBlockChanged) {
+			internalChangeset[changeset_key_groupingBlock] = groupingBlock;
+			internalChangeset[changeset_key_groupingBlockType] = @(groupingBlockType);
 		}
-		if (sortingChanged) {
-			internalChangeset[changeset_key_sorting] = sorting;
+		if (sortingBlockChanged) {
+			internalChangeset[changeset_key_sortingBlock] = sortingBlock;
+			internalChangeset[changeset_key_sortingBlockType] = @(sortingBlockType);
 		}
 		if (versionTagChanged) {
 			internalChangeset[changeset_key_versionTag] = versionTag;
@@ -492,8 +502,8 @@
  * Gets an exact list of changes that happend to the view, translating groups to sections as requested.
  * See the header file for more information.
 **/
-- (void)getSectionChanges:(NSArray<YapDatabaseViewSectionChange *> **)sectionChangesPtr
-               rowChanges:(NSArray<YapDatabaseViewRowChange *> **)rowChangesPtr
+- (void)getSectionChanges:(NSArray **)sectionChangesPtr
+               rowChanges:(NSArray **)rowChangesPtr
          forNotifications:(NSArray *)notifications
              withMappings:(YapDatabaseViewMappings *)mappings
 {
@@ -981,58 +991,87 @@
 #pragma mark Internal
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-- (void)setGrouping:(YapDatabaseViewGrouping *)newGrouping
-            sorting:(YapDatabaseViewSorting *)newSorting
-         versionTag:(NSString *)newVersionTag
+- (void)setGroupingBlock:(YapDatabaseViewGroupingBlock)newGroupingBlock
+       groupingBlockType:(YapDatabaseViewBlockType)newGroupingBlockType
+            sortingBlock:(YapDatabaseViewSortingBlock)newSortingBlock
+        sortingBlockType:(YapDatabaseViewBlockType)newSortingBlockType
+              versionTag:(NSString *)newVersionTag
 {
-	grouping = newGrouping;
-	groupingChanged = YES;
+	groupingBlock        = newGroupingBlock;
+	groupingBlockType    = newGroupingBlockType;
+	groupingBlockChanged = YES;
 	
-	sorting = newSorting;
-	sortingChanged = YES;
+	sortingBlock        = newSortingBlock;
+	sortingBlockType    = newSortingBlockType;
+	sortingBlockChanged = YES;
 	
-	versionTag = newVersionTag;
+	versionTag        = newVersionTag;
 	versionTagChanged = YES;
 }
 
-- (void)getGrouping:(YapDatabaseViewGrouping **)groupingPtr
-            sorting:(YapDatabaseViewSorting **)sortingPtr
+- (void)getGroupingBlock:(YapDatabaseViewGroupingBlock *)groupingBlockPtr
+       groupingBlockType:(YapDatabaseViewBlockType *)groupingBlockTypePtr
+            sortingBlock:(YapDatabaseViewSortingBlock *)sortingBlockPtr
+        sortingBlockType:(YapDatabaseViewBlockType *)sortingBlockTypePtr
 {
-	if (!grouping || !sorting)
+	if (!groupingBlock || !sortingBlock)
 	{
 		// Fetch & Cache
 		
-		YapDatabaseViewGrouping *mostRecentGrouping = nil;
-		YapDatabaseViewSorting  *mostRecentSorting  = nil;
+		YapDatabaseViewGroupingBlock mostRecentGroupingBlock = NULL;
+		YapDatabaseViewSortingBlock  mostRecentSortingBlock  = NULL;
+		YapDatabaseViewBlockType mostRecentGroupingBlockType = 0;
+		YapDatabaseViewBlockType mostRecentSortingBlockType  = 0;
 		
-		BOOL needsGrouping = (grouping == nil);
-		BOOL needsSorting = (sorting == nil);
+		BOOL needsGroupingBlock = (groupingBlock == NULL);
+		BOOL needsSortingBlock = (sortingBlock == NULL);
 		
-		[view getGrouping:(needsGrouping ? &mostRecentGrouping : NULL)
-		          sorting:(needsSorting  ? &mostRecentSorting  : NULL)];
+		[view getGroupingBlock:(needsGroupingBlock ? &mostRecentGroupingBlock : NULL)
+		     groupingBlockType:(needsGroupingBlock ? &mostRecentGroupingBlockType : NULL)
+		          sortingBlock:(needsSortingBlock ? &mostRecentSortingBlock : NULL)
+		      sortingBlockType:(needsSortingBlock ? &mostRecentSortingBlockType : NULL)];
 		
-		if (needsGrouping) {
-			grouping = mostRecentGrouping;
+		if (needsGroupingBlock) {
+			groupingBlock     = mostRecentGroupingBlock;
+			groupingBlockType = mostRecentGroupingBlockType;
 		}
-		if (needsSorting) {
-			sorting = mostRecentSorting;
+		if (needsSortingBlock) {
+			sortingBlock      = mostRecentSortingBlock;
+			sortingBlockType  = mostRecentSortingBlockType;
 		}
 	}
 	
-	if (groupingPtr) *groupingPtr = grouping;
-	if (sortingPtr)  *sortingPtr  = sorting;
+	if (groupingBlockPtr)     *groupingBlockPtr     = groupingBlock;
+	if (groupingBlockTypePtr) *groupingBlockTypePtr = groupingBlockType;
+	if (sortingBlockPtr)      *sortingBlockPtr      = sortingBlock;
+	if (sortingBlockTypePtr)  *sortingBlockTypePtr  = sortingBlockType;
 }
 
-- (void)getGrouping:(YapDatabaseViewGrouping **)groupingPtr
+- (void)getGroupingBlock:(YapDatabaseViewGroupingBlock *)groupingBlockPtr
+       groupingBlockType:(YapDatabaseViewBlockType *)groupingBlockTypePtr
 {
-	[self getGrouping:groupingPtr
-	          sorting:NULL];
+	[self getGroupingBlock:groupingBlockPtr
+	     groupingBlockType:groupingBlockTypePtr
+	          sortingBlock:NULL
+	      sortingBlockType:NULL];
 }
 
-- (void)getSorting:(YapDatabaseViewSorting **)sortingPtr
+- (void)getSortingBlock:(YapDatabaseViewSortingBlock *)sortingBlockPtr
+       sortingBlockType:(YapDatabaseViewBlockType *)sortingBlockTypePtr
 {
-	[self getGrouping:NULL
-	          sorting:sortingPtr];
+	[self getGroupingBlock:NULL
+	     groupingBlockType:NULL
+	          sortingBlock:sortingBlockPtr
+	      sortingBlockType:sortingBlockTypePtr];
+}
+
+- (void)getGroupingBlockType:(YapDatabaseViewBlockType *)groupingBlockTypePtr
+            sortingBlockType:(YapDatabaseViewBlockType *)sortingBlockTypePtr
+{
+	[self getGroupingBlock:NULL
+	     groupingBlockType:groupingBlockTypePtr
+	          sortingBlock:NULL
+	      sortingBlockType:sortingBlockTypePtr];
 }
 
 @end

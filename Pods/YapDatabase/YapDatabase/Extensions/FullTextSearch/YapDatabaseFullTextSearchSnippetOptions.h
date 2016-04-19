@@ -1,7 +1,5 @@
 #import <Foundation/Foundation.h>
 
-NS_ASSUME_NONNULL_BEGIN
-
 /**
  * This class represents options that may be passed to the FTS snippet function.
  *
@@ -62,7 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
  * 
  * If not set, the default value is nil.
 **/
-@property (nonatomic, copy, nullable) NSString *columnName;
+@property (nonatomic, copy) NSString *columnName;
 
 /**
  * The numberOfTokens is used as the (approximate) number of tokens to include in the returned snippet text value.
@@ -79,5 +77,3 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) int numberOfTokens;
 
 @end
-
-NS_ASSUME_NONNULL_END

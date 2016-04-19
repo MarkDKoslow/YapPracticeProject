@@ -1,10 +1,5 @@
 #import <Foundation/Foundation.h>
 
-@class CKRecordID;
-@class CKRecord;
-
-NS_ASSUME_NONNULL_BEGIN
-
 /**
  * A change-set represents the set of changes that will be given to a CKModifyRecordsOperation.
  *
@@ -24,13 +19,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) BOOL isInFlight;
 
-@property (nonatomic, readonly) NSArray<CKRecordID *> *recordIDsToDelete; // Array of CKRecordID's for CKModifyRecordsOperation
-@property (nonatomic, readonly) NSArray<CKRecord *> *recordsToSave;     // Array of CKRecord's for CKModifyRecordsOperation
-@property (nonatomic, readonly) NSArray<CKRecordID *> *recordIDsToSave;   // Array of CKRecordID's (from recordsToSave)
+@property (nonatomic, readonly) NSArray *recordIDsToDelete; // Array of CKRecordID's for CKModifyRecordsOperation
+@property (nonatomic, readonly) NSArray *recordsToSave;     // Array of CKRecord's for CKModifyRecordsOperation
+@property (nonatomic, readonly) NSArray *recordIDsToSave;   // Array of CKRecordID's (from recordsToSave)
 
 @property (nonatomic, readonly) NSUInteger recordIDsToDeleteCount; // shortcut if you just want the count
 @property (nonatomic, readonly) NSUInteger recordsToSaveCount;     // shortcut if you just want the count
 
 @end
-
-NS_ASSUME_NONNULL_END

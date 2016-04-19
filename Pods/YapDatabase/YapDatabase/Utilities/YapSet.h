@@ -1,7 +1,5 @@
 #import <Foundation/Foundation.h>
 
-NS_ASSUME_NONNULL_BEGIN
-
 /**
  * The YapSet class can be treated more or less like a regular NSSet.
  *
@@ -41,5 +39,3 @@ NS_ASSUME_NONNULL_BEGIN
 // https://github.com/yapstudios/YapDatabase
 
 @end
-
-NS_ASSUME_NONNULL_END

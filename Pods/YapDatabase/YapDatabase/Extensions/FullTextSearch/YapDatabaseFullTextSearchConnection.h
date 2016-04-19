@@ -3,8 +3,6 @@
 
 @class YapDatabaseFullTextSearch;
 
-NS_ASSUME_NONNULL_BEGIN
-
 /**
  * Welcome to YapDatabase!
  *
@@ -32,5 +30,3 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) YapDatabaseFullTextSearch *fullTextSearch;
 
 @end
-
-NS_ASSUME_NONNULL_END

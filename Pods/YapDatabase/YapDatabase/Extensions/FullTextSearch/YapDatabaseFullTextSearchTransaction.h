@@ -3,7 +3,6 @@
 #import "YapDatabaseExtensionTransaction.h"
 #import "YapDatabaseFullTextSearchSnippetOptions.h"
 
-NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Welcome to YapDatabase!
@@ -47,25 +46,23 @@ NS_ASSUME_NONNULL_BEGIN
 // Query matching + Snippets
 
 - (void)enumerateKeysMatching:(NSString *)query
-           withSnippetOptions:(nullable YapDatabaseFullTextSearchSnippetOptions *)options
+           withSnippetOptions:(YapDatabaseFullTextSearchSnippetOptions *)options
                    usingBlock:
             (void (^)(NSString *snippet, NSString *collection, NSString *key, BOOL *stop))block;
 
 - (void)enumerateKeysAndMetadataMatching:(NSString *)query
-                      withSnippetOptions:(nullable YapDatabaseFullTextSearchSnippetOptions *)options
+                      withSnippetOptions:(YapDatabaseFullTextSearchSnippetOptions *)options
                               usingBlock:
             (void (^)(NSString *snippet, NSString *collection, NSString *key, id metadata, BOOL *stop))block;
 
 - (void)enumerateKeysAndObjectsMatching:(NSString *)query
-                     withSnippetOptions:(nullable YapDatabaseFullTextSearchSnippetOptions *)options
+                     withSnippetOptions:(YapDatabaseFullTextSearchSnippetOptions *)options
                              usingBlock:
             (void (^)(NSString *snippet, NSString *collection, NSString *key, id object, BOOL *stop))block;
 
 - (void)enumerateRowsMatching:(NSString *)query
-           withSnippetOptions:(nullable YapDatabaseFullTextSearchSnippetOptions *)options
+           withSnippetOptions:(YapDatabaseFullTextSearchSnippetOptions *)options
                    usingBlock:
             (void (^)(NSString *snippet, NSString *collection, NSString *key, id object, id metadata, BOOL *stop))block;
 
 @end
-
-NS_ASSUME_NONNULL_END

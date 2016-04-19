@@ -58,8 +58,10 @@ static NSString *const changeset_key_query = @"query";
 - (sqlite3_stmt *)snippetTable_removeForRowidStatement;
 - (sqlite3_stmt *)snippetTable_removeAllStatement;
 
-- (void)setGrouping:(YapDatabaseViewGrouping *)newGrouping
-            sorting:(YapDatabaseViewSorting *)newSorting;
+- (void)setGroupingBlock:(YapDatabaseViewGroupingBlock)newGroupingBlock
+       groupingBlockType:(YapDatabaseViewBlockType)newGroupingBlockType
+            sortingBlock:(YapDatabaseViewSortingBlock)newSortingBlock
+        sortingBlockType:(YapDatabaseViewBlockType)newSortingBlockType;
 
 @end
 

@@ -439,17 +439,23 @@ static NSString *const ext_key_query             = @"query";
 	
 	__unsafe_unretained YapDatabaseViewConnection *parentViewConnection = parentViewTransaction->viewConnection;
 	
-	YapDatabaseViewGrouping *grouping = nil;
-	YapDatabaseViewSorting  *sorting  = nil;
+	YapDatabaseViewGroupingBlock groupingBlock = NULL;
+	YapDatabaseViewSortingBlock sortingBlock   = NULL;
+	YapDatabaseViewBlockType groupingBlockType = 0;
+	YapDatabaseViewBlockType sortingBlockType  = 0;
 	
-	[parentViewConnection getGrouping:&grouping
-	                          sorting:&sorting];
+	[parentViewConnection getGroupingBlock:&groupingBlock
+	                     groupingBlockType:&groupingBlockType
+	                          sortingBlock:&sortingBlock
+	                      sortingBlockType:&sortingBlockType];
 	
 	__unsafe_unretained YapDatabaseSearchResultsViewConnection *searchViewConnection =
 	  (YapDatabaseSearchResultsViewConnection *)viewConnection;
 	
-	[searchViewConnection setGrouping:grouping
-	                          sorting:sorting];
+	[searchViewConnection setGroupingBlock:groupingBlock
+	                     groupingBlockType:groupingBlockType
+	                          sortingBlock:sortingBlock
+	                      sortingBlockType:sortingBlockType];
 	
 	// Code overview:
 	//
@@ -1015,15 +1021,6 @@ static NSString *const ext_key_query             = @"query";
 #pragma mark Cleanup & Commit
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Subclasses may OPTIONALLY implement this method.
- * This method is only called if within a readwrite transaction.
- *
- * Subclasses should write any last changes to their database table(s) if needed,
- * and should perform any needed cleanup before the changeset is requested.
- *
- * Remember, the changeset is requested immediately after this method is invoked.
-**/
 - (void)flushPendingChangesToExtensionTables
 {
 	YDBLogAutoTrace();
@@ -1093,13 +1090,13 @@ static NSString *const ext_key_query             = @"query";
 	
 	if (searchResultsView->parentViewName)
 	{
-		// Since our groupingBlock is the same as the parent's groupingBlock,
-		// just ask the parentViewTransaction for the group (which is cached info).
+		// Instead of going to the groupingBlock,
+		// just ask the parentViewTransaction what the last group was.
 		
 		__unsafe_unretained YapDatabaseViewTransaction *parentViewTransaction =
 		  [databaseTransaction ext:searchResultsView->parentViewName];
 		
-		group = [parentViewTransaction groupForRowid:rowid];
+		group = parentViewTransaction->lastHandledGroup;
 		
 		if (group)
 		{
@@ -1121,35 +1118,37 @@ static NSString *const ext_key_query             = @"query";
 		
 		if (!allowedCollections || [allowedCollections isAllowed:collection])
 		{
-			YapDatabaseViewGrouping *grouping;
+			YapDatabaseViewGroupingBlock groupingBlock_generic;
+			YapDatabaseViewBlockType     groupingBlockType;
 			
-			[viewConnection getGrouping:&grouping];
+			[viewConnection getGroupingBlock:&groupingBlock_generic
+			               groupingBlockType:&groupingBlockType];
 			
-			if (grouping->blockType == YapDatabaseBlockTypeWithKey)
+			if (groupingBlockType == YapDatabaseViewBlockTypeWithKey)
 			{
 				__unsafe_unretained YapDatabaseViewGroupingWithKeyBlock groupingBlock =
-			      (YapDatabaseViewGroupingWithKeyBlock)grouping->block;
+			      (YapDatabaseViewGroupingWithKeyBlock)groupingBlock_generic;
 				
 				group = groupingBlock(databaseTransaction, collection, key);
 			}
-			else if (grouping->blockType == YapDatabaseBlockTypeWithObject)
+			else if (groupingBlockType == YapDatabaseViewBlockTypeWithObject)
 			{
 				__unsafe_unretained YapDatabaseViewGroupingWithObjectBlock groupingBlock =
-			      (YapDatabaseViewGroupingWithObjectBlock)grouping->block;
+			      (YapDatabaseViewGroupingWithObjectBlock)groupingBlock_generic;
 				
 				group = groupingBlock(databaseTransaction, collection, key, object);
 			}
-			else if (grouping->blockType == YapDatabaseBlockTypeWithMetadata)
+			else if (groupingBlockType == YapDatabaseViewBlockTypeWithMetadata)
 			{
 				__unsafe_unretained YapDatabaseViewGroupingWithMetadataBlock groupingBlock =
-			      (YapDatabaseViewGroupingWithMetadataBlock)grouping->block;
+			      (YapDatabaseViewGroupingWithMetadataBlock)groupingBlock_generic;
 				
 				group = groupingBlock(databaseTransaction, collection, key, metadata);
 			}
 			else
 			{
 				__unsafe_unretained YapDatabaseViewGroupingWithRowBlock groupingBlock =
-			      (YapDatabaseViewGroupingWithRowBlock)grouping->block;
+			      (YapDatabaseViewGroupingWithRowBlock)groupingBlock_generic;
 				
 				group = groupingBlock(databaseTransaction, collection, key, object, metadata);
 			}
@@ -1192,11 +1191,15 @@ static NSString *const ext_key_query             = @"query";
 		           object:object
 		         metadata:metadata
 		          inGroup:group withChanges:flags isNew:YES];
+		
+		lastHandledGroup = group;
 	}
 	else
 	{
 		// Not in view (not in parentView, or groupingBlock said NO, or doesn't match query).
 		// This was an insert operation, so we know it wasn't already in the view.
+		
+		lastHandledGroup = nil;
 	}
 }
 
@@ -1225,13 +1228,13 @@ static NSString *const ext_key_query             = @"query";
 	
 	if (searchResultsView->parentViewName)
 	{
-		// Since our groupingBlock is the same as the parent's groupingBlock,
-		// just ask the parentViewTransaction for the group (which is cached info).
+		// Instead of going to the groupingBlock,
+		// just ask the parentViewTransaction what the last group was.
 		
 		__unsafe_unretained YapDatabaseViewTransaction *parentViewTransaction =
 		  [databaseTransaction ext:searchResultsView->parentViewName];
 		
-		group = [parentViewTransaction groupForRowid:rowid];
+		group = parentViewTransaction->lastHandledGroup;
 		
 		if (group)
 		{
@@ -1253,35 +1256,37 @@ static NSString *const ext_key_query             = @"query";
 		
 		if (!allowedCollections || [allowedCollections isAllowed:collection])
 		{
-			YapDatabaseViewGrouping *grouping;
+			YapDatabaseViewGroupingBlock groupingBlock_generic;
+			YapDatabaseViewBlockType     groupingBlockType;
 			
-			[viewConnection getGrouping:&grouping];
+			[viewConnection getGroupingBlock:&groupingBlock_generic
+			               groupingBlockType:&groupingBlockType];
 			
-			if (grouping->blockType == YapDatabaseBlockTypeWithKey)
+			if (groupingBlockType == YapDatabaseViewBlockTypeWithKey)
 			{
 				__unsafe_unretained YapDatabaseViewGroupingWithKeyBlock groupingBlock =
-			      (YapDatabaseViewGroupingWithKeyBlock)grouping->block;
+			      (YapDatabaseViewGroupingWithKeyBlock)groupingBlock_generic;
 				
 				group = groupingBlock(databaseTransaction, collection, key);
 			}
-			else if (grouping->blockType == YapDatabaseBlockTypeWithObject)
+			else if (groupingBlockType == YapDatabaseViewBlockTypeWithObject)
 			{
 				__unsafe_unretained YapDatabaseViewGroupingWithObjectBlock groupingBlock =
-			      (YapDatabaseViewGroupingWithObjectBlock)grouping->block;
+			      (YapDatabaseViewGroupingWithObjectBlock)groupingBlock_generic;
 				
 				group = groupingBlock(databaseTransaction, collection, key, object);
 			}
-			else if (grouping->blockType == YapDatabaseBlockTypeWithMetadata)
+			else if (groupingBlockType == YapDatabaseViewBlockTypeWithMetadata)
 			{
 				__unsafe_unretained YapDatabaseViewGroupingWithMetadataBlock groupingBlock =
-			      (YapDatabaseViewGroupingWithMetadataBlock)grouping->block;
+			      (YapDatabaseViewGroupingWithMetadataBlock)groupingBlock_generic;
 				
 				group = groupingBlock(databaseTransaction, collection, key, metadata);
 			}
 			else
 			{
 				__unsafe_unretained YapDatabaseViewGroupingWithRowBlock groupingBlock =
-			      (YapDatabaseViewGroupingWithRowBlock)grouping->block;
+			      (YapDatabaseViewGroupingWithRowBlock)groupingBlock_generic;
 				
 				group = groupingBlock(databaseTransaction, collection, key, object, metadata);
 			}
@@ -1326,6 +1331,8 @@ static NSString *const ext_key_query             = @"query";
 		          inGroup:group
 		      withChanges:flags
 		            isNew:NO];
+		
+		lastHandledGroup = group;
 	}
 	else
 	{
@@ -1334,6 +1341,7 @@ static NSString *const ext_key_query             = @"query";
 		// This was an update operation, so it may have previously been in the view.
 		
 		[self removeRowid:rowid collectionKey:collectionKey];
+		lastHandledGroup = nil;
 	}
 }
 
@@ -1355,27 +1363,33 @@ static NSString *const ext_key_query             = @"query";
 	__unsafe_unretained YapDatabaseFullTextSearchSnippetOptions *snippetOptions =
 	  searchResultsOptions.snippetOptions_NoCopy;
 	
-	YapDatabaseViewGrouping *grouping = nil;
-	YapDatabaseViewSorting  *sorting  = nil;
+	YapDatabaseViewGroupingBlock groupingBlock_generic;
+	YapDatabaseViewBlockType     groupingBlockType;
+	YapDatabaseViewBlockType     sortingBlockType;
 	
-	[viewConnection getGrouping:&grouping
-	                    sorting:&sorting];
+	[viewConnection getGroupingBlock:&groupingBlock_generic
+	               groupingBlockType:&groupingBlockType
+	                    sortingBlock:NULL
+	                sortingBlockType:&sortingBlockType];
 	
 	if (searchResultsView->parentViewName)
 	{
 		// Implementation Note:
 		// This code is modeled after that in YapDatabaseFilteredViewTransaction.
 		
-		BOOL groupMayHaveChanged = (grouping->blockType & YapDatabaseBlockType_ObjectFlag);
-		BOOL sortMayHaveChanged  = (sorting->blockType  & YapDatabaseBlockType_ObjectFlag);
+		BOOL groupMayHaveChanged = groupingBlockType == YapDatabaseViewBlockTypeWithRow ||
+		                           groupingBlockType == YapDatabaseViewBlockTypeWithObject;
 		
-		// Since our groupingBlock is the same as the parent's groupingBlock,
-		// just ask the parentViewTransaction for the group (which is cached info).
+		BOOL sortMayHaveChanged = sortingBlockType == YapDatabaseViewBlockTypeWithRow ||
+		                          sortingBlockType == YapDatabaseViewBlockTypeWithObject;
+		
+		// Instead of going to the groupingBlock,
+		// just ask the parentViewTransaction what the last group was.
 		
 		__unsafe_unretained YapDatabaseViewTransaction *parentViewTransaction =
 		  [databaseTransaction ext:searchResultsView->parentViewName];
 		
-		NSString *group = [parentViewTransaction groupForRowid:rowid];
+		NSString *group = parentViewTransaction->lastHandledGroup;
 		
 		if (group)
 		{
@@ -1403,6 +1417,7 @@ static NSString *const ext_key_query             = @"query";
 				// Thus it wasn't previously in view, and still isn't in the view.
 			}
 			
+			lastHandledGroup = nil;
 			return;
 		}
 		
@@ -1412,7 +1427,8 @@ static NSString *const ext_key_query             = @"query";
 		__unsafe_unretained YapDatabaseFullTextSearch *fts =
 		  (YapDatabaseFullTextSearch *)[[ftsTransaction extensionConnection] extension];
 		
-		BOOL searchMayHaveChanged = (fts->handler->blockType & YapDatabaseBlockType_ObjectFlag);
+		BOOL searchMayHaveChanged = fts->blockType == YapDatabaseFullTextSearchBlockTypeWithRow ||
+		                            fts->blockType == YapDatabaseFullTextSearchBlockTypeWithObject;
 		
 		if (!groupMayHaveChanged && !sortMayHaveChanged && !searchMayHaveChanged)
 		{
@@ -1426,6 +1442,7 @@ static NSString *const ext_key_query             = @"query";
 			{
 				// Was previously filtered from this view.
 				// And still filtered from this view.
+				lastHandledGroup = nil;
 			}
 			else
 			{
@@ -1436,6 +1453,8 @@ static NSString *const ext_key_query             = @"query";
 				                                        inGroup:group
 				                                        atIndex:existingIndex
 				                                    withChanges:flags]];
+				
+				lastHandledGroup = group;
 			}
 			
 			return;
@@ -1467,7 +1486,8 @@ static NSString *const ext_key_query             = @"query";
 			YapDatabaseViewChangesBitMask flags = (YapDatabaseViewChangedObject | YapDatabaseViewChangedMetadata);
 			
 			id metadata = nil;
-			if (sorting->blockType & YapDatabaseBlockType_MetadataFlag)
+			if (sortingBlockType == YapDatabaseViewBlockTypeWithRow ||
+			    sortingBlockType == YapDatabaseViewBlockTypeWithMetadata)
 			{
 				metadata = [databaseTransaction metadataForCollectionKey:collectionKey withRowid:rowid];
 			}
@@ -1479,6 +1499,8 @@ static NSString *const ext_key_query             = @"query";
 			          inGroup:group
 			      withChanges:flags
 			            isNew:NO];
+			
+			lastHandledGroup = group;
 		}
 		else
 		{
@@ -1487,6 +1509,7 @@ static NSString *const ext_key_query             = @"query";
 			// This was an update operation, so it may have previously been in the view.
 			
 			[self removeRowid:rowid collectionKey:collectionKey];
+			lastHandledGroup = nil;
 		}
 	}
 	else
@@ -1497,8 +1520,8 @@ static NSString *const ext_key_query             = @"query";
 		id metadata = nil;
 		NSString *group = nil;
 		
-		if (grouping->blockType == YapDatabaseBlockTypeWithKey ||
-			grouping->blockType == YapDatabaseBlockTypeWithMetadata)
+		if (groupingBlockType == YapDatabaseViewBlockTypeWithKey ||
+			groupingBlockType == YapDatabaseViewBlockTypeWithMetadata)
 		{
 			// Grouping is based on the key or metadata.
 			// Neither have changed, and thus the group hasn't changed.
@@ -1511,8 +1534,8 @@ static NSString *const ext_key_query             = @"query";
 				// Nothing to do.
 				// It wasn't previously in the view, and still isn't in the view.
 			}
-			else if (sorting->blockType == YapDatabaseBlockTypeWithKey ||
-			         sorting->blockType == YapDatabaseBlockTypeWithMetadata)
+			else if (sortingBlockType == YapDatabaseViewBlockTypeWithKey ||
+			         sortingBlockType == YapDatabaseViewBlockTypeWithMetadata)
 			{
 				// Nothing has moved because the group hasn't changed and
 				// nothing has changed that relates to sorting.
@@ -1531,7 +1554,10 @@ static NSString *const ext_key_query             = @"query";
 				// Sorting is based on the object, which has changed.
 				// So the sort order may possibly have changed.
 				
-				if (sorting->blockType & YapDatabaseBlockType_MetadataFlag)
+				// From previous if statement (above) we know:
+				// sortingBlockType is object or row (object+metadata)
+				
+				if (sortingBlockType == YapDatabaseViewBlockTypeWithRow)
 				{
 					// Need the metadata for the sorting block
 					metadata = [databaseTransaction metadataForCollectionKey:collectionKey withRowid:rowid];
@@ -1558,17 +1584,17 @@ static NSString *const ext_key_query             = @"query";
 			
 			if (!allowedCollections || [allowedCollections isAllowed:collection])
 			{
-				if (grouping->blockType == YapDatabaseBlockTypeWithObject)
+				if (groupingBlockType == YapDatabaseViewBlockTypeWithObject)
 				{
 					__unsafe_unretained YapDatabaseViewGroupingWithObjectBlock groupingBlock =
-			          (YapDatabaseViewGroupingWithObjectBlock)grouping->block;
+			          (YapDatabaseViewGroupingWithObjectBlock)groupingBlock_generic;
 					
 					group = groupingBlock(databaseTransaction, collection, key, object);
 				}
 				else
 				{
 					__unsafe_unretained YapDatabaseViewGroupingWithRowBlock groupingBlock =
-			          (YapDatabaseViewGroupingWithRowBlock)grouping->block;
+			          (YapDatabaseViewGroupingWithRowBlock)groupingBlock_generic;
 					
 					metadata = [databaseTransaction metadataForCollectionKey:collectionKey withRowid:rowid];
 					group = groupingBlock(databaseTransaction, collection, key, object, metadata);
@@ -1584,8 +1610,8 @@ static NSString *const ext_key_query             = @"query";
 			}
 			else
 			{
-				if (sorting->blockType == YapDatabaseBlockTypeWithKey ||
-				    sorting->blockType == YapDatabaseBlockTypeWithMetadata)
+				if (sortingBlockType == YapDatabaseViewBlockTypeWithKey ||
+				    sortingBlockType == YapDatabaseViewBlockTypeWithMetadata)
 				{
 					// Sorting is based on the key or metadata, neither of which has changed.
 					// So if the group hasn't changed, then the sort order hasn't changed.
@@ -1608,11 +1634,13 @@ static NSString *const ext_key_query             = @"query";
 						                                        atIndex:existingIndex
 						                                    withChanges:flags]];
 						
+						lastHandledGroup = group;
 						return;
 					}
 				}
 				
-				if (metadata == nil && (sorting->blockType & YapDatabaseBlockType_MetadataFlag))
+				if (metadata == nil && (sortingBlockType == YapDatabaseViewBlockTypeWithRow ||
+				                        sortingBlockType == YapDatabaseViewBlockTypeWithMetadata))
 				{
 					// Need the metadata for the sorting block
 					metadata = [databaseTransaction metadataForCollectionKey:collectionKey withRowid:rowid];
@@ -1627,6 +1655,8 @@ static NSString *const ext_key_query             = @"query";
 				          inGroup:group withChanges:flags isNew:NO];
 			}
 		}
+		
+		lastHandledGroup = group;
 	}
 }
 
@@ -1647,27 +1677,33 @@ static NSString *const ext_key_query             = @"query";
 	__unsafe_unretained YapDatabaseFullTextSearchSnippetOptions *snippetOptions =
 	  searchResultsOptions.snippetOptions_NoCopy;
 	
-	YapDatabaseViewGrouping *grouping = nil;
-	YapDatabaseViewSorting  *sorting  = nil;
+	YapDatabaseViewGroupingBlock groupingBlock_generic = NULL;
+	YapDatabaseViewBlockType groupingBlockType = 0;
+	YapDatabaseViewBlockType sortingBlockType  = 0;
 	
-	[viewConnection getGrouping:&grouping
-	                    sorting:&sorting];
+	[viewConnection getGroupingBlock:&groupingBlock_generic
+	               groupingBlockType:&groupingBlockType
+	                    sortingBlock:NULL
+	                sortingBlockType:&sortingBlockType];
 	
 	if (searchResultsView->parentViewName)
 	{
 		// Implementation Note:
 		// This code is modeled after that in YapDatabaseFilteredViewTransaction.
 		
-		BOOL groupMayHaveChanged = (grouping->blockType & YapDatabaseBlockType_MetadataFlag);
-		BOOL sortMayHaveChanged  = (sorting->blockType  & YapDatabaseBlockType_MetadataFlag);
+		BOOL groupMayHaveChanged = groupingBlockType == YapDatabaseViewBlockTypeWithRow ||
+		                           groupingBlockType == YapDatabaseViewBlockTypeWithMetadata;
 		
-		// Since our groupingBlock is the same as the parent's groupingBlock,
-		// just ask the parentViewTransaction for the group (which is cached info).
+		BOOL sortMayHaveChanged = sortingBlockType == YapDatabaseViewBlockTypeWithRow ||
+		                          sortingBlockType == YapDatabaseViewBlockTypeWithMetadata;
+		
+		// Instead of going to the groupingBlock,
+		// just ask the parentViewTransaction what the last group was.
 		
 		__unsafe_unretained YapDatabaseViewTransaction *parentViewTransaction =
 		  [databaseTransaction ext:searchResultsView->parentViewName];
 		
-		NSString *group = [parentViewTransaction groupForRowid:rowid];
+		NSString *group = parentViewTransaction->lastHandledGroup;
 		
 		if (group)
 		{
@@ -1695,6 +1731,7 @@ static NSString *const ext_key_query             = @"query";
 				// Thus it wasn't previously in view, and still isn't in the view.
 			}
 			
+			lastHandledGroup = nil;
 			return;
 		}
 		
@@ -1704,7 +1741,8 @@ static NSString *const ext_key_query             = @"query";
 		__unsafe_unretained YapDatabaseFullTextSearch *fts =
 		  (YapDatabaseFullTextSearch *)[[ftsTransaction extensionConnection] extension];
 		
-		BOOL searchMayHaveChanged = (fts->handler->blockType & YapDatabaseBlockType_MetadataFlag);
+		BOOL searchMayHaveChanged = fts->blockType == YapDatabaseFullTextSearchBlockTypeWithRow ||
+		                            fts->blockType == YapDatabaseFullTextSearchBlockTypeWithObject;
 		
 		if (!groupMayHaveChanged && !sortMayHaveChanged && !searchMayHaveChanged)
 		{
@@ -1718,6 +1756,7 @@ static NSString *const ext_key_query             = @"query";
 			{
 				// Was previously filtered from this view.
 				// And still filtered from this view.
+				lastHandledGroup = nil;
 			}
 			else
 			{
@@ -1728,6 +1767,8 @@ static NSString *const ext_key_query             = @"query";
 				                                        inGroup:group
 				                                        atIndex:existingIndex
 				                                    withChanges:flags]];
+				
+				lastHandledGroup = group;
 			}
 			
 			return;
@@ -1759,7 +1800,8 @@ static NSString *const ext_key_query             = @"query";
 			YapDatabaseViewChangesBitMask flags = (YapDatabaseViewChangedObject | YapDatabaseViewChangedMetadata);
 			
 			id object= nil;
-			if (sorting->blockType & YapDatabaseBlockType_ObjectFlag)
+			if (sortingBlockType == YapDatabaseViewBlockTypeWithRow ||
+			    sortingBlockType == YapDatabaseViewBlockTypeWithObject)
 			{
 				object = [databaseTransaction objectForCollectionKey:collectionKey withRowid:rowid];
 			}
@@ -1771,6 +1813,8 @@ static NSString *const ext_key_query             = @"query";
 			          inGroup:group
 			      withChanges:flags
 			            isNew:NO];
+			
+			lastHandledGroup = group;
 		}
 		else
 		{
@@ -1779,6 +1823,7 @@ static NSString *const ext_key_query             = @"query";
 			// This was an update operation, so the key may have previously been in the view.
 			
 			[self removeRowid:rowid collectionKey:collectionKey];
+			lastHandledGroup = nil;
 		}
 	}
 	else
@@ -1789,8 +1834,8 @@ static NSString *const ext_key_query             = @"query";
 		id object = nil;
 		NSString *group = nil;
 		
-		if (grouping->blockType == YapDatabaseBlockTypeWithKey ||
-		    grouping->blockType == YapDatabaseBlockTypeWithObject)
+		if (groupingBlockType == YapDatabaseViewBlockTypeWithKey ||
+		    groupingBlockType == YapDatabaseViewBlockTypeWithObject)
 		{
 			// Grouping is based on the key or object.
 			// Neither have changed, and thus the group hasn't changed.
@@ -1803,8 +1848,8 @@ static NSString *const ext_key_query             = @"query";
 				// Nothing to do.
 				// The key wasn't previously in the view, and still isn't in the view.
 			}
-			else if (sorting->blockType == YapDatabaseBlockTypeWithKey ||
-			         sorting->blockType == YapDatabaseBlockTypeWithObject)
+			else if (sortingBlockType == YapDatabaseViewBlockTypeWithKey ||
+			         sortingBlockType == YapDatabaseViewBlockTypeWithObject)
 			{
 				// Nothing has moved because the group hasn't changed and
 				// nothing has changed that relates to sorting.
@@ -1823,7 +1868,10 @@ static NSString *const ext_key_query             = @"query";
 				// Sorting is based on the metadata, which has changed.
 				// So the sort order may possibly have changed.
 				
-				if (sorting->blockType & YapDatabaseBlockType_ObjectFlag)
+				// From previous if statement (above) we know:
+				// sortingBlockType is metadata or objectAndMetadata
+				
+				if (sortingBlockType == YapDatabaseViewBlockTypeWithRow)
 				{
 					// Need the object for the sorting block
 					object = [databaseTransaction objectForCollectionKey:collectionKey withRowid:rowid];
@@ -1850,17 +1898,17 @@ static NSString *const ext_key_query             = @"query";
 			
 			if (!allowedCollections || [allowedCollections isAllowed:collection])
 			{
-				if (grouping->blockType == YapDatabaseBlockTypeWithMetadata)
+				if (groupingBlockType == YapDatabaseViewBlockTypeWithMetadata)
 				{
 					__unsafe_unretained YapDatabaseViewGroupingWithMetadataBlock groupingBlock =
-			          (YapDatabaseViewGroupingWithMetadataBlock)grouping->block;
+			          (YapDatabaseViewGroupingWithMetadataBlock)groupingBlock_generic;
 					
 					group = groupingBlock(databaseTransaction, collection, key, metadata);
 				}
 				else
 				{
 					__unsafe_unretained YapDatabaseViewGroupingWithRowBlock groupingBlock =
-			          (YapDatabaseViewGroupingWithRowBlock)grouping->block;
+			          (YapDatabaseViewGroupingWithRowBlock)groupingBlock_generic;
 					
 					object = [databaseTransaction objectForCollectionKey:collectionKey withRowid:rowid];
 					group = groupingBlock(databaseTransaction, collection, key, object, metadata);
@@ -1876,8 +1924,8 @@ static NSString *const ext_key_query             = @"query";
 			}
 			else
 			{
-				if (sorting->blockType == YapDatabaseBlockTypeWithKey ||
-				    sorting->blockType == YapDatabaseBlockTypeWithObject)
+				if (sortingBlockType == YapDatabaseViewBlockTypeWithKey ||
+				    sortingBlockType == YapDatabaseViewBlockTypeWithObject)
 				{
 					// Sorting is based on the key or object, neither of which has changed.
 					// So if the group hasn't changed, then the sort order hasn't changed.
@@ -1900,11 +1948,13 @@ static NSString *const ext_key_query             = @"query";
 						                                        atIndex:existingIndex
 						                                    withChanges:flags]];
 						
+						lastHandledGroup = group;
 						return;
 					}
 				}
 				
-				if (object == nil && (sorting->blockType & YapDatabaseBlockType_ObjectFlag))
+				if (object == nil && (sortingBlockType == YapDatabaseViewBlockTypeWithRow ||
+				                      sortingBlockType == YapDatabaseViewBlockTypeWithObject))
 				{
 					// Need the object for the sorting block
 					object = [databaseTransaction objectForCollectionKey:collectionKey withRowid:rowid];
@@ -1919,6 +1969,8 @@ static NSString *const ext_key_query             = @"query";
 						  inGroup:group withChanges:flags isNew:NO];
 			}
 		}
+		
+		lastHandledGroup = group;
 	}
 }
 
@@ -2297,12 +2349,13 @@ static NSString *const ext_key_query             = @"query";
 	// Now enumerate any items in ftsRowidsLeft
 	
 	YapDatabaseViewGroupingBlock groupingBlock_generic = NULL;
+	YapDatabaseViewBlockType groupingBlockType = 0;
+	YapDatabaseViewBlockType sortingBlockType  = 0;
 	
-	YapDatabaseViewGrouping *grouping = nil;
-	YapDatabaseViewSorting  *sorting  = nil;
-	
-	[viewConnection getGrouping:&grouping
-	                    sorting:&sorting];
+	[viewConnection getGroupingBlock:&groupingBlock_generic
+	               groupingBlockType:&groupingBlockType
+	                    sortingBlock:NULL
+	                sortingBlockType:&sortingBlockType];
 	
 	YapRowidSetEnumerate(ftsRowidsLeft, ^(int64_t rowid, BOOL *stop) { @autoreleasepool {
 		
@@ -2318,26 +2371,26 @@ static NSString *const ext_key_query             = @"query";
 		
 		if (!allowedCollections || [allowedCollections isAllowed:ck.collection])
 		{
-			if (grouping->blockType == YapDatabaseBlockTypeWithKey)
+			if (groupingBlockType == YapDatabaseViewBlockTypeWithKey)
 			{
 				__unsafe_unretained YapDatabaseViewGroupingWithKeyBlock groupingBlock =
-			      (YapDatabaseViewGroupingWithKeyBlock)grouping->block;
+			      (YapDatabaseViewGroupingWithKeyBlock)groupingBlock_generic;
 				
 				group = groupingBlock(databaseTransaction, ck.collection, ck.key);
 			}
-			else if (grouping->blockType == YapDatabaseBlockTypeWithObject)
+			else if (groupingBlockType == YapDatabaseViewBlockTypeWithObject)
 			{
 				__unsafe_unretained YapDatabaseViewGroupingWithObjectBlock groupingBlock =
-			      (YapDatabaseViewGroupingWithObjectBlock)grouping->block;
+			      (YapDatabaseViewGroupingWithObjectBlock)groupingBlock_generic;
 				
 				object = [databaseTransaction objectForCollectionKey:ck withRowid:rowid];
 				
 				group = groupingBlock(databaseTransaction, ck.collection, ck.key, object);
 			}
-			else if (grouping->blockType == YapDatabaseBlockTypeWithMetadata)
+			else if (groupingBlockType == YapDatabaseViewBlockTypeWithMetadata)
 			{
 				__unsafe_unretained YapDatabaseViewGroupingWithMetadataBlock groupingBlock =
-			      (YapDatabaseViewGroupingWithMetadataBlock)grouping->block;
+			      (YapDatabaseViewGroupingWithMetadataBlock)groupingBlock_generic;
 				
 				metadata = [databaseTransaction metadataForCollectionKey:ck withRowid:rowid];
 				
@@ -2360,17 +2413,17 @@ static NSString *const ext_key_query             = @"query";
 			
 			YapDatabaseViewChangesBitMask flags = (YapDatabaseViewChangedObject | YapDatabaseViewChangedMetadata);
 			
-			if (sorting->blockType == YapDatabaseBlockTypeWithObject)
+			if (sortingBlockType == YapDatabaseViewBlockTypeWithObject)
 			{
 				if (object == nil)
 					object = [databaseTransaction objectForCollectionKey:ck withRowid:rowid];
 			}
-			else if (sorting->blockType == YapDatabaseBlockTypeWithMetadata)
+			else if (sortingBlockType == YapDatabaseViewBlockTypeWithMetadata)
 			{
 				if (metadata == nil)
 					metadata = [databaseTransaction metadataForCollectionKey:ck withRowid:rowid];
 			}
-			else if (sorting->blockType == YapDatabaseBlockTypeWithRow)
+			else if (sortingBlockType == YapDatabaseViewBlockTypeWithRow)
 			{
 				if (object == nil) {
 					if (metadata == nil)
@@ -2522,6 +2575,9 @@ static NSString *const ext_key_query             = @"query";
 		int status = sqlite3_step(statement);
 		if (status == SQLITE_ROW)
 		{
+			if (databaseTransaction->connection->needsMarkSqlLevelSharedReadLock)
+				[databaseTransaction->connection markSqlLevelSharedReadLockAcquired];
+			
 			const unsigned char *text = sqlite3_column_text(statement, column_idx_snippet);
 			int textSize = sqlite3_column_bytes(statement, column_idx_snippet);
 			

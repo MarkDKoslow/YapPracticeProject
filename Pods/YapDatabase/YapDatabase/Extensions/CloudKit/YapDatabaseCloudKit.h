@@ -2,18 +2,12 @@
 #import <CloudKit/CloudKit.h>
 
 #import "YapDatabaseExtension.h"
-
 #import "YapDatabaseCloudKitTypes.h"
 #import "YapDatabaseCloudKitOptions.h"
 #import "YapDatabaseCloudKitConnection.h"
 #import "YapDatabaseCloudKitTransaction.h"
 
 #import "YDBCKChangeSet.h"
-#import "YDBCKMergeInfo.h"
-#import "YDBCKRecordInfo.h"
-#import "YDBCKRecord.h"
-
-NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const YapDatabaseCloudKitSuspendCountChangedNotification;
 extern NSString *const YapDatabaseCloudKitInFlightChangeSetChangedNotification;
@@ -42,25 +36,27 @@ extern NSString *const YapDatabaseCloudKitInFlightChangeSetChangedNotification;
 - (instancetype)initWithRecordHandler:(YapDatabaseCloudKitRecordHandler *)recordHandler
                            mergeBlock:(YapDatabaseCloudKitMergeBlock)mergeBlock
                   operationErrorBlock:(YapDatabaseCloudKitOperationErrorBlock)opErrorBlock
-                           versionTag:(nullable NSString *)versionTag
-                          versionInfo:(nullable id)versionInfo;
+                           versionTag:(NSString *)versionTag
+                          versionInfo:(id)versionInfo;
 
 - (instancetype)initWithRecordHandler:(YapDatabaseCloudKitRecordHandler *)recordHandler
                            mergeBlock:(YapDatabaseCloudKitMergeBlock)mergeBlock
                   operationErrorBlock:(YapDatabaseCloudKitOperationErrorBlock)opErrorBlock
-                           versionTag:(nullable NSString *)versionTag
-                          versionInfo:(nullable id)versionInfo
-                              options:(nullable YapDatabaseCloudKitOptions *)options;
+                           versionTag:(NSString *)versionTag
+                          versionInfo:(id)versionInfo
+                              options:(YapDatabaseCloudKitOptions *)options;
 
 - (instancetype)initWithRecordHandler:(YapDatabaseCloudKitRecordHandler *)recordHandler
                            mergeBlock:(YapDatabaseCloudKitMergeBlock)mergeBlock
                   operationErrorBlock:(YapDatabaseCloudKitOperationErrorBlock)opErrorBlock
-              databaseIdentifierBlock:(nullable YapDatabaseCloudKitDatabaseIdentifierBlock)databaseIdentifierBlock
-                           versionTag:(nullable NSString *)versionTag
-                          versionInfo:(nullable id)versionInfo
-                              options:(nullable YapDatabaseCloudKitOptions *)options;
+              databaseIdentifierBlock:(YapDatabaseCloudKitDatabaseIdentifierBlock)databaseIdentifierBlock
+                           versionTag:(NSString *)versionTag
+                          versionInfo:(id)versionInfo
+                              options:(YapDatabaseCloudKitOptions *)options;
 
-@property (nonatomic, strong, readonly) YapDatabaseCloudKitRecordHandler *recordHandler;
+@property (nonatomic, strong, readonly) YapDatabaseCloudKitRecordBlock recordBlock;
+@property (nonatomic, assign, readonly) YapDatabaseCloudKitBlockType recordBlockType;
+
 @property (nonatomic, strong, readonly) YapDatabaseCloudKitMergeBlock mergeBlock;
 @property (nonatomic, strong, readonly) YapDatabaseCloudKitOperationErrorBlock operationErrorBlock;
 
@@ -156,14 +152,6 @@ extern NSString *const YapDatabaseCloudKitInFlightChangeSetChangedNotification;
 #pragma mark Change-Sets
 
 /**
- * Returns the "current" changeSet,
- * which is either the inFlightChangeSet, or the next changeSet to go inFlight once resumed.
- *
- * In other words, the first YDBCKChangeSet in the queue.
-**/
-- (YDBCKChangeSet *)currentChangeSet;
-
-/**
  * Returns an array of YDBCKChangeSet objects, which represent the pending (and in-flight) change-sets.
  * The array is ordered, such that:
  * - the first item in the array is either in-flight or the next to be uploaded
@@ -176,7 +164,7 @@ extern NSString *const YapDatabaseCloudKitInFlightChangeSetChangedNotification;
  * and keep the YapDatabaseCloudKit extension suspended the whole time.
  * Then just inspect the change-sets to ensure that everything is working as you expect.
 **/
-- (NSArray<YDBCKChangeSet *> *)pendingChangeSets;
+- (NSArray *)pendingChangeSets;
 
 /**
  * Faster access if you just want to get the counts.
@@ -209,5 +197,3 @@ extern NSString *const YapDatabaseCloudKitInFlightChangeSetChangedNotification;
                      queuedChangeSets:(NSUInteger *)numQueuedChangeSetsPtr;
 
 @end
-
-NS_ASSUME_NONNULL_END
