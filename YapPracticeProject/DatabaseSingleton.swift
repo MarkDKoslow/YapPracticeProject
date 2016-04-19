@@ -23,7 +23,7 @@ class Database {
     }
     
     // Get Database Instance
-    private static var sharedDatabase: Database {
+    static var sharedDatabase: Database {
         if let sharedInstance = sharedInstance {
             return sharedInstance
         } else {
