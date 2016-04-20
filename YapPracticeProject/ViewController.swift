@@ -11,13 +11,18 @@ import YapDatabase
 
 class ViewController: UIViewController {
 
-    @IBOutlet weak var tableView: UITableView!
-    let connection = Database.newConnection()
+    @IBOutlet weak var myTableView: UITableView!
+    var connection: YapDatabaseConnection?
     var mappings: YapDatabaseViewMappings?
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        myTableView.delegate = self
+        myTableView.dataSource = self
         // Do any additional setup after loading the view, typically from a nib.
+        
+        let connection = Database.newConnection()
+        self.connection = connection
         
         // Read Books json
         //
@@ -53,56 +58,45 @@ class ViewController: UIViewController {
                 transaction.setObject(book, forKey: book.isbn, inCollection: "Books")
             }
         })
-//        connection.readWithBlock { transaction in
-//            huckFinn = transaction.objectForKey("0486280616", inCollection: "Books") as? Book
-//        }
         
         // TO DO: Need to create Mappings
         //
         connection.readWithBlock { transaction in
-            let grouping = YapDatabaseViewMappingGroupFilter {
-                return { (group, transaction) -> Bool in
-                    return true
-                }
-            }
-            
-            let sorting = YapDatabaseViewMappingGroupSort {
-                return { (group1, group2, transaction) -> NSComparisonResult in
-                    return group1.caseInsensitiveCompare(group2)
-                }
-            }
-            
-            mappings = YapDatabaseViewMappings(groupFilterBlock: grouping, sortBlock: sorting, view: CustomDatabaseExtension.BookList.name)
+            self.mappings = YapDatabaseViewMappings(groupFilterBlock: { (group, transaction) -> Bool in
+                return true
+            }, sortBlock: { (group1, group2, transaction) -> NSComparisonResult in
+                return group1.caseInsensitiveCompare(group2)
+            }, view: CustomDatabaseExtension.BookList.name)
         }
         
         // Initialize mappings
         //
-//        connection.beginLongLivedReadTransaction()
+        connection.beginLongLivedReadTransaction()
         connection.readWithBlock { self.mappings?.updateWithTransaction($0) }
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(yapDatabaseModified:), name: YapDatabaseModifiedNotification, object: connection.database)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(yapDatabaseModified(_:)), name: YapDatabaseModifiedNotification, object: connection.database)
         
         
         // Retreive objects from view
         var count = 0
         connection.readWithBlock { transaction in
-            
-            let myExt = transaction.ext(CustomDatabaseExtension.BookList.name)
-            count = myExt.numberOfItemsInAllGroups()
+            if let mappings = self.mappings {
+                count = Int(mappings.numberOfItemsInAllGroups())
+            }
+            print(count)
         }
-        print(count)
-        
-        // TO DO: Propogate view with mappings
-        //
-        
     }
     
     func yapDatabaseModified(notification: NSNotification) {
-        var notifications = connection.beginLongLivedReadTransaction()
+        guard let connection = self.connection else { fatalError() }
+        connection.beginLongLivedReadTransaction()
+//
+//        var sectionChanges = []
+//        var rowChanges = []
         
-        var sectionChanges = []
-        var rowChanges = []
-        
-        connection.ext(CustomDatabaseExtension.BookList.name).getSectionChanges(&sectionChanges, rowChanges: &rowChanges, forNotifications: notifications, withMappings: self.mappings)
+        connection.readWithBlock { self.mappings?.updateWithTransaction($0) }
+//
+//        
+//        connection.ext(CustomDatabaseExtension.BookList.name).getSectionChanges(&sectionChanges, rowChanges: &rowChanges, forNotifications: notifications, withMappings: self.mappings)
     }
 
     override func didReceiveMemoryWarning() {
@@ -113,15 +107,38 @@ class ViewController: UIViewController {
 
 extension ViewController: UITableViewDataSource {
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if let mappings = mappings {
+            return Int(mappings.numberOfItemsInSection(UInt(section)))
+        }
+        return 1
+    }
+    
+    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+        if let mappings = mappings {
+            return Int(mappings.numberOfSections())
+        }
         return 1
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        return UITableViewCell()
-    }
-    
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 1
+        guard let mappings = self.mappings, connection = self.connection else { fatalError() }
+        
+        let groupName = mappings.groupForSection(UInt(indexPath.section))
+        
+        var book: Book? = nil
+        connection.readWithBlock { transaction in
+            book = transaction.ext(CustomDatabaseExtension.BookList.name).objectAtIndexPath(indexPath, withMappings: mappings) as? Book
+        }
+        
+        var cell = tableView.dequeueReusableCellWithIdentifier("Cell") as UITableViewCell?
+        if cell == nil {
+            cell = UITableViewCell(style: .Default, reuseIdentifier: "Cell")
+        }
+        
+        if let cell = cell {
+            cell.textLabel?.text = book?.title
+        }
+        return cell!
     }
 }
 
