@@ -98,62 +98,57 @@ class ViewController: UIViewController {
         }
     }
     
+    func initializeMappings() {
+        self.mappings = YapDatabaseViewMappings(groupFilterBlock: { (group, transaction) -> Bool in
+            return true
+            }, sortBlock: { (group1, group2, transaction) -> NSComparisonResult in
+                return group1.caseInsensitiveCompare(group2)
+            }, view: "bookList")
+    
+        self.connection?.readWithBlock { transaction in
+            self.mappings?.updateWithTransaction(transaction)
+        }
+    }
+    
     func yapDatabaseModified(notification: NSNotification) {
         guard let connection = self.connection else { fatalError() }
-        connection.beginLongLivedReadTransaction()
-//
-//        var sectionChanges = []
-//        var rowChanges = []
         
-        connection.readWithBlock { self.mappings?.updateWithTransaction($0) }
-//
-//        
-//        connection.ext(CustomDatabaseExtension.BookList.name).getSectionChanges(&sectionChanges, rowChanges: &rowChanges, forNotifications: notifications, withMappings: self.mappings)
-    }
+        let notifications = connection.beginLongLivedReadTransaction()
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+        guard connection.ext("bookList").hasChangesForNotifications(notifications) else {
+            connection.readWithBlock { self.mappings?.updateWithTransaction($0) }
+            return
+        }
+        
+        var rowChanges: NSArray?
+        var sectionChanges: NSArray?
+        
+        connection.ext("bookList").getSectionChanges(&sectionChanges, rowChanges: &rowChanges, forNotifications: notifications, withMappings: self.mappings)
+        
+        print(rowChanges)
     }
 }
 
 extension ViewController: UITableViewDataSource {
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if let mappings = mappings {
-            return Int(mappings.numberOfItemsInSection(UInt(section)))
-        }
-        return 1
+        return Int(mappings?.numberOfItemsInSection(UInt(section)) ?? 0)
     }
     
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        if let mappings = mappings {
-            return Int(mappings.numberOfSections())
-        }
-        return 1
+        return Int(mappings?.numberOfSections() ?? 0)
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         guard let mappings = self.mappings, connection = self.connection else { fatalError() }
-        
-        let groupName = mappings.groupForSection(UInt(indexPath.section))
-        
+
         var book: Book? = nil
         connection.readWithBlock { transaction in
-            book = transaction.ext(CustomDatabaseExtension.BookList.name).objectAtIndexPath(indexPath, withMappings: mappings) as? Book
+            book = transaction.ext("bookList").objectAtIndexPath(indexPath, withMappings: mappings) as? Book
         }
         
-        var cell = tableView.dequeueReusableCellWithIdentifier("Cell") as UITableViewCell?
-        if cell == nil {
-            cell = UITableViewCell(style: .Default, reuseIdentifier: "Cell")
-        }
-        
-        if let cell = cell {
-            cell.textLabel?.text = book?.title
-        }
-        return cell!
-    }
-}
+        let cell = tableView.dequeueReusableCellWithIdentifier("Cell")!
+        cell.textLabel?.text = book?.title
 
-extension ViewController: UITableViewDelegate {
-    
+        return cell
+    }
 }
