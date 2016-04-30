@@ -18,40 +18,31 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         myTableView.dataSource = self
-        // Do any additional setup after loading the view, typically from a nib.
         
+        // Create new connection with the database 
+        //
         let connection = Database.newConnection()
         self.connection = connection
         
-        // Read Books json
+        // Create Booklist
         //
-        let myFileURL = NSBundle.mainBundle().URLForResource("Books", withExtension: "json")!
-        guard let fileData = NSData(contentsOfURL: myFileURL) else {
-            fatalError("File could not be found")
-        }
-        
-        // Parse Books json into dictionary
-        //
-        var bookList = [Book]()
-        do {
-            let json = try NSJSONSerialization.JSONObjectWithData(fileData, options: .AllowFragments)
-            print("\(json)")
-            
-            if let books = json["books"] as? [[String: String]] {
-                for book in books {
-                    guard let bookTitle = book["title"], author = book["author"], isbn = book["isbn"] else {
-                        fatalError("Book could not be parsed correctly")
-                    }
-                    let bookObject = Book(title: bookTitle, author: author, isbn: isbn)
-                    bookList.append(bookObject)
-                }
-            }
-        } catch {
-            print("lolz fail")
-        }
-        
-//        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(yapDatabaseModified(_:)), name: YapDatabaseModifiedNotification, object: connection.database)
-//        
+        let bookList = [
+            Book(title: "Don Quixote", author: "Miguel De Cervantes", isbn: "0060934344"),
+            Book(title: "Pilgrim's Progress", author: "John Bunyan", isbn: "0486426750"),
+            Book(title: "Robinson Crusoe", author: "Daniel Defoe", isbn: "150329238X"),
+            Book(title: "Tom Jones", author: "Henry Fielding", isbn: "0199536996"),
+            Book(title: "Gulliver's Travels", author: "Jonathan Swift", isbn: "0486292738"),
+            Book(title: "Clarissa", author: "Samuel Richardson", isbn: "0140432159"),
+            Book(title: "Emma", author: "Jane Austen", isbn: "1503261964"),
+            Book(title: "Frankenstein", author: "Mary Shelley", isbn: "0486282112"),
+            Book(title: "David Copperfield", author: "Charles Dickens", isbn: "0140439447"),
+            Book(title: "Alice In Wonderland", author: "Lewis Carroll", isbn: "0553213458"),
+            Book(title: "Anna Karenina", author: "Leo Tolstoy", isbn: "067978330X"),
+            Book(title: "Daniel Deronda", author: "George Eliot", isbn: "0140434275"),
+            Book(title: "Huckleberry Finn", author: "Mark Twain", isbn: "0486280616"),
+            Book(title: "As I Lay Dying", author: "William Faulkner", isbn: "067973225")
+        ]
+   
         // Insert Books in database
         //
         connection.readWriteWithBlock({ transaction in
