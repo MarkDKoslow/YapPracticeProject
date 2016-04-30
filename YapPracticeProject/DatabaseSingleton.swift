@@ -36,9 +36,8 @@ class Database {
         return sharedDatabase.database.newConnection()
     }
     
-    // Register an extension with the DB
-    static func registerExtension(ext: YapDatabaseExtension, withName name: String) {
-        sharedDatabase.database.registerExtension(ext, withName: name)
+    static func registerExtension(view: YapDatabaseExtension, withName name: String) {
+        sharedDatabase.database.registerExtension(view, withName: name)
     }
     
     private let database: YapDatabase

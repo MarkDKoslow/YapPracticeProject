@@ -29,7 +29,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             fatalError("Failed to get database path")
         }
         
-        let database = initializeDatabaseAtPath(databasePath)
+        let database = YapDatabase(path: databasePath)
         Database.setSharedDatabase(database)
         return true
     }
