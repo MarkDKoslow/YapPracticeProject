@@ -67,7 +67,7 @@ class ViewController: UIViewController {
         
         Database.registerExtension(view, withName: "bookList")
         
-        // Make sure view has been created
+        // Make sure view has been created. (Would normally write a test for this)
         //
         connection.readWithBlock { transaction in
             let HuckFinn = transaction.objectForKey("0486280616", inCollection: "books")
@@ -79,7 +79,8 @@ class ViewController: UIViewController {
         connection.beginLongLivedReadTransaction()
         self.initializeMappings()
         
-        // Retreive objects from view
+        // Make sure numberOfItems is correct. (Would normally write a test for this)
+        //
         var count = 0
         connection.readWithBlock { transaction in
             if let mappings = self.mappings {
@@ -100,37 +101,24 @@ class ViewController: UIViewController {
             self.mappings?.updateWithTransaction(transaction)
         }
     }
-    
-    func yapDatabaseModified(notification: NSNotification) {
-        guard let connection = self.connection else { fatalError() }
-        
-        let notifications = connection.beginLongLivedReadTransaction()
-
-        guard connection.ext("bookList").hasChangesForNotifications(notifications) else {
-            connection.readWithBlock { self.mappings?.updateWithTransaction($0) }
-            return
-        }
-        
-        var rowChanges: NSArray?
-        var sectionChanges: NSArray?
-        
-        connection.ext("bookList").getSectionChanges(&sectionChanges, rowChanges: &rowChanges, forNotifications: notifications, withMappings: self.mappings)
-        
-        print(rowChanges)
-    }
 }
 
 extension ViewController: UITableViewDataSource {
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return Int(mappings?.numberOfItemsInSection(UInt(section)) ?? 0)
-    }
-    
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return Int(mappings?.numberOfSections() ?? 0)
     }
     
+    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return Int(mappings?.numberOfItemsInSection(UInt(section)) ?? 0)
+    }
+    
+    func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        guard let mappings = self.mappings else { fatalError("Mappings not initialized") }
+        return mappings.groupForSection(UInt(section))
+    }
+    
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        guard let mappings = self.mappings, connection = self.connection else { fatalError() }
+        guard let mappings = self.mappings, connection = self.connection else { fatalError(("Mappings or connection not initialized")) }
 
         var book: Book? = nil
         connection.readWithBlock { transaction in
