@@ -31,7 +31,6 @@ class Database {
         }
     }
     
-    // New connection to DB
     static func newConnection() -> YapDatabaseConnection {
         return sharedDatabase.database.newConnection()
     }

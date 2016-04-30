@@ -17,7 +17,6 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        myTableView.delegate = self
         myTableView.dataSource = self
         // Do any additional setup after loading the view, typically from a nib.
         
@@ -51,30 +50,43 @@ class ViewController: UIViewController {
             print("lolz fail")
         }
         
-        // Store Books in YAP
+//        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(yapDatabaseModified(_:)), name: YapDatabaseModifiedNotification, object: connection.database)
+//        
+        // Insert Books in database
         //
         connection.readWriteWithBlock({ transaction in
             for book in bookList {
-                transaction.setObject(book, forKey: book.isbn, inCollection: "Books")
+                transaction.setObject(book, forKey: book.isbn, inCollection: "books")
             }
         })
         
-        // TO DO: Need to create Mappings
+        // Create view
+        //
+        let grouping = YapDatabaseViewGrouping.withObjectBlock { (_, _, _, object) -> String! in
+            guard let book = object as? Book else { return nil }
+            return String(book.title.lowercaseString.characters.first) // Grouping by book first character
+        }
+        
+        let sorting = YapDatabaseViewSorting.withObjectBlock { (_, _, _, _, object1, _, _, object2) -> NSComparisonResult in
+            guard let book1 = object1 as? Book, let book2 = object2 as? Book else { return .OrderedSame }
+            return book1.title.compare(book2.title) // Sorting alphabetically
+        }
+        
+        let view = YapDatabaseView(grouping: grouping, sorting: sorting, versionTag: "0")
+        
+        Database.registerExtension(view, withName: "bookList")
+        
+        // Make sure view has been created
         //
         connection.readWithBlock { transaction in
-            self.mappings = YapDatabaseViewMappings(groupFilterBlock: { (group, transaction) -> Bool in
-                return true
-            }, sortBlock: { (group1, group2, transaction) -> NSComparisonResult in
-                return group1.caseInsensitiveCompare(group2)
-            }, view: CustomDatabaseExtension.BookList.name)
+            let HuckFinn = transaction.objectForKey("0486280616", inCollection: "books")
+            print("\(HuckFinn)")
         }
         
         // Initialize mappings
         //
         connection.beginLongLivedReadTransaction()
-        connection.readWithBlock { self.mappings?.updateWithTransaction($0) }
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(yapDatabaseModified(_:)), name: YapDatabaseModifiedNotification, object: connection.database)
-        
+        self.initializeMappings()
         
         // Retreive objects from view
         var count = 0
