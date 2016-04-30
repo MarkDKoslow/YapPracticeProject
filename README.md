@@ -1,6 +1,6 @@
 # YapPracticeProject
 
-This is a simple project to show how to initialize a project using the framework YAP Database. 
+This is a simple project showing how to start building an iOS app using the framework YAP Database. 
 
 The associated blog post can be found here: 
 
