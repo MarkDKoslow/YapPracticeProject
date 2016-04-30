@@ -51,11 +51,11 @@ class ViewController: UIViewController {
             }
         })
         
-        // Create view
+        // Create YAP view and register extensions
         //
         let grouping = YapDatabaseViewGrouping.withObjectBlock { (_, _, _, object) -> String! in
             guard let book = object as? Book else { return nil }
-            return String(book.title.lowercaseString.characters.first) // Grouping by book first character
+            return String(book.title.uppercaseString.characters.first ?? "?") // Grouping by book first character
         }
         
         let sorting = YapDatabaseViewSorting.withObjectBlock { (_, _, _, _, object1, _, _, object2) -> NSComparisonResult in
