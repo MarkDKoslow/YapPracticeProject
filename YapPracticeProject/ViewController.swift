@@ -94,11 +94,11 @@ class ViewController: UIViewController {
         self.mappings = YapDatabaseViewMappings(groupFilterBlock: { (group, transaction) -> Bool in
             return true
             }, sortBlock: { (group1, group2, transaction) -> NSComparisonResult in
-                return group1.caseInsensitiveCompare(group2)
+                return group1.caseInsensitiveCompare(group2)    // Sort groups alphabetically
             }, view: "bookList")
     
         self.connection?.readWithBlock { transaction in
-            self.mappings?.updateWithTransaction(transaction)
+            self.mappings?.updateWithTransaction(transaction)   // Must update mappings in a transaction to create object properly
         }
     }
 }
